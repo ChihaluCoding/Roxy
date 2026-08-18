@@ -29,23 +29,27 @@ fi
 # --- 既定 pref ---
 # src/prefs/*.js を firefox.js の末尾に追記する（moz.build を触らずに済む）
 if [ -n "$(ls -A "$ROOT/src/prefs" 2>/dev/null)" ]; then
-  PROFILE_JS="$ENGINE/browser/app/profile/firefox.js"
   log "既定 pref を追記: $(ls "$ROOT/src/prefs" | tr '
 ' ' ')"
   {
-    printf '
-// ==== Merlin defaults (src/prefs/) ====
-'
+    echo ""
+    echo "// ==== Merlin defaults (src/prefs/) ===="
     cat "$ROOT"/src/prefs/*.js
-  } >> "$PROFILE_JS"
+  } >> "$ENGINE/browser/app/profile/firefox.js"
 fi
 
-# --- UI スタイル ---
-# src/ui/*.css を共通テーマに取り込む
-if [ -n "$(ls -A "$ROOT/src/ui" 2>/dev/null)" ]; then
-  log "UI スタイルを配置: browser/themes/shared/merlin/"
-  mkdir -p "$ENGINE/browser/themes/shared/merlin"
-  cp "$ROOT"/src/ui/*.css "$ENGINE/browser/themes/shared/merlin/" 2>/dev/null || true
-fi
+# --- Merlin Layer ---
+# 新規ファイル群は engine/ 側の対応ディレクトリへコピーする。
+# 上流ファイルを書き換えないので、この経路は上流追従で壊れない。
+deploy() {  # deploy <src相対> <engine相対>
+  [ -d "$ROOT/$1" ] || return 0
+  [ -n "$(ls -A "$ROOT/$1" 2>/dev/null)" ] || return 0
+  log "配置: $1 -> $2"
+  mkdir -p "$ENGINE/$2"
+  cp -r "$ROOT/$1/." "$ENGINE/$2/"
+}
+deploy src/merlin      browser/components/merlin
+deploy src/rules       browser/components/merlin/rules
+deploy src/extensions/merlin-adblock browser/extensions/merlin-adblock
 
 log "適用完了"
