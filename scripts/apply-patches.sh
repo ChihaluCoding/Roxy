@@ -26,4 +26,26 @@ if [ -d "$ROOT/src/branding" ] && [ -n "$(ls -A "$ROOT/src/branding" 2>/dev/null
   cp -r "$ROOT/src/branding/." "$BR/"
 fi
 
+# --- 既定 pref ---
+# src/prefs/*.js を firefox.js の末尾に追記する（moz.build を触らずに済む）
+if [ -n "$(ls -A "$ROOT/src/prefs" 2>/dev/null)" ]; then
+  PROFILE_JS="$ENGINE/browser/app/profile/firefox.js"
+  log "既定 pref を追記: $(ls "$ROOT/src/prefs" | tr '
+' ' ')"
+  {
+    printf '
+// ==== Merlin defaults (src/prefs/) ====
+'
+    cat "$ROOT"/src/prefs/*.js
+  } >> "$PROFILE_JS"
+fi
+
+# --- UI スタイル ---
+# src/ui/*.css を共通テーマに取り込む
+if [ -n "$(ls -A "$ROOT/src/ui" 2>/dev/null)" ]; then
+  log "UI スタイルを配置: browser/themes/shared/merlin/"
+  mkdir -p "$ENGINE/browser/themes/shared/merlin"
+  cp "$ROOT"/src/ui/*.css "$ENGINE/browser/themes/shared/merlin/" 2>/dev/null || true
+fi
+
 log "適用完了"

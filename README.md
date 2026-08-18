@@ -13,6 +13,8 @@ Firefox（mozilla-firefox/firefox）を上流とする、パッチ型フォー�
 | `patches/*.patch` | 上流ファイルへの変更。番号順に適用 |
 | `src/branding/` | ブランディングの上書きファイル（コピーで配置） |
 | `src/features/` | 独自機能の新規ファイル置き場 |
+| `src/prefs/` | 既定 pref。ビルド時に firefox.js へ追記される |
+| `src/ui/` | 独自 CSS。`browser/themes/shared/merlin/` へ配置 |
 | `mozconfigs/` | ビルド設定。並列度は **8ジョブ固定** |
 | `scripts/` | 取得・適用・ビルド・パッケージ |
 
@@ -27,6 +29,11 @@ Windows は **必ず MozillaBuild シェル**（`c:\mozilla-build\start-shell.ba
 ./scripts/run.sh              # 起動
 ./scripts/package.sh          # 配布物を engine/obj-*/dist/ に生成
 ```
+
+## 何をどう改造するか
+
+[docs/customizing.md](docs/customizing.md) に 4 系統（pref / CSS / 新規ファイル / パッチ）の使い分けをまとめてある。
+上流追従で壊れにくい手段から順に検討すること。
 
 ## 開発サイクル
 
