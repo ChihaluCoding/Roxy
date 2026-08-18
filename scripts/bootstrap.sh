@@ -19,7 +19,15 @@ fi
 git -C "$ENGINE" tag -f merlin-base "$TAG" >/dev/null
 echo "$TAG" > "$ROOT/.upstream-tag"
 
-log "mach bootstrap（ツールチェーン取得）..."
-( cd "$ENGINE" && ./mach --no-interactive bootstrap --application-choice browser )
+# mach bootstrap は対話プロンプトを出すことがあり、非対話実行では固まる。
+# 手動で済ませた場合は SKIP_MACH_BOOTSTRAP=1 を付けて飛ばす。
+if [ "${SKIP_MACH_BOOTSTRAP:-0}" = 1 ]; then
+  log "mach bootstrap をスキップ（SKIP_MACH_BOOTSTRAP=1）"
+else
+  log "mach bootstrap（ツールチェーン取得）..."
+  log "※ 応答待ちで止まる場合は Ctrl-C し、MozillaBuild シェルで手動実行してください:"
+  log "   cd engine && ./mach bootstrap --application-choice browser"
+  ( cd "$ENGINE" && ./mach bootstrap --application-choice browser )
+fi
 
 log "完了。次は scripts/apply-patches.sh"
