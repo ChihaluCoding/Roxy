@@ -6,6 +6,22 @@ NAME="${1:-}"
 [ -n "$NAME" ] || die "パッチ名を指定してください（例: 0010-vertical-tabs）"
 
 OUT="$PATCHES/$NAME.patch"
-git -C "$ENGINE" add -A -- ':!obj-*' >/dev/null
-git -C "$ENGINE" diff --cached --binary merlin-base -- ':!browser/branding/merlin' > "$OUT"
-[ -s "$OUT" ] && log "書き出し: patches/$NAME.patch ($(wc -l < "$OUT") 行)" || { rm -f "$OUT"; die "差分がありません"; }
+
+# apply-patches.sh がコピー配置する経路は差分に含めない。
+# パッチは「上流ファイルへの改変」だけを持つ。
+EXCLUDES=(
+  ':!obj-*'
+  ':!browser/branding/merlin'
+  ':!browser/components/merlin'
+  ':!browser/extensions/merlin-adblock'
+  ':!browser/app/profile/firefox.js'
+)
+
+git -C "$ENGINE" add -A -- "${EXCLUDES[@]}" >/dev/null
+git -C "$ENGINE" diff --cached --binary merlin-base -- "${EXCLUDES[@]}" > "$OUT"
+if [ -s "$OUT" ]; then
+  log "書き出し: patches/$NAME.patch ($(wc -l < "$OUT") 行)"
+else
+  rm -f "$OUT"
+  die "差分がありません"
+fi
