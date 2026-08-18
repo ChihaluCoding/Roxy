@@ -21,3 +21,7 @@ scripts/gen-icons.py
 scripts/mozshell.sh
 scripts/package.sh
 scripts/run.sh
+docs/adding-a-feature.md
+docs/architecture.md
+docs/features.md
+docs/roadmap.md
