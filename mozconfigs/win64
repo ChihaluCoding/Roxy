@@ -1,3 +1,6 @@
 . "$topsrcdir/../mozconfigs/common"
-ac_add_options --target=x86_64-pc-mingw32
+# config.guess は MozillaBuild 上で x86_64-pc-mingw64 を返すが、これは現在サポート外。
+# host/target とも明示する。
+ac_add_options --host=x86_64-pc-windows-msvc
+ac_add_options --target=x86_64-pc-windows-msvc
 mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-win64
