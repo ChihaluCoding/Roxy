@@ -1,0 +1,11 @@
+{
+  "name": "Merlin",
+  "vendor": "Merlin Project",
+  "appId": "merlin@example.org",
+  "upstream": {
+    "remote": "https://github.com/mozilla-firefox/firefox.git",
+    "channel": "release",
+    "tag": "auto"
+  },
+  "targets": ["win64", "macos-aarch64"]
+}

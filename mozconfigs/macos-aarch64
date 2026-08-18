@@ -1,0 +1,3 @@
+. "$topsrcdir/../mozconfigs/common"
+ac_add_options --target=aarch64-apple-darwin
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-macos-aarch64

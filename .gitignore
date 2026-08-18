@@ -1,0 +1,6 @@
+# Firefox のソースツリー（数十GB）はコミットしない
+/engine/
+/obj-*/
+/dist/
+/.venv/
+*.log

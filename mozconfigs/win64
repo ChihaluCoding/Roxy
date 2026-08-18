@@ -1,0 +1,3 @@
+. "$topsrcdir/../mozconfigs/common"
+ac_add_options --target=x86_64-pc-mingw32
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-win64

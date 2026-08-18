@@ -1,0 +1,26 @@
+# 全ターゲット共通。各 mozconfig の先頭から include される。
+
+# --- ビルド並列度: CPU を使い切らない（ユーザー指定: 8） ---
+mk_add_options MOZ_MAKE_FLAGS="-j8"
+mk_add_options MOZ_PARALLEL_BUILD=8
+ac_add_options --enable-jobs=8
+# Rust のコンパイルジョブも同様に絞る
+mk_add_options "export CARGO_BUILD_JOBS=8"
+mk_add_options "export RUSTC_WRAPPER="
+
+# --- Merlin ブランディング ---
+ac_add_options --with-app-name=merlin
+ac_add_options --with-app-basename=Merlin
+ac_add_options --with-branding=browser/branding/merlin
+
+# --- リリース最適化 ---
+ac_add_options --enable-optimize
+ac_add_options --enable-release
+ac_add_options --disable-debug
+ac_add_options --disable-tests
+
+# --- Mozilla 固有サービスの無効化（フォークでは使えない/使わない） ---
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+ac_add_options MOZ_TELEMETRY_REPORTING=
+ac_add_options MOZ_DATA_REPORTING=
