@@ -12,8 +12,26 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "assets" / "roxy-icon.ico"
+ASSETS = ROOT / "assets"
 OUT = ROOT / "src" / "branding"
+
+
+def source_path():
+    """assets/ の中で最も新しい版（roxy-icon-vN.ico の N 最大）を使う。
+
+    無ければ roxy-icon.ico にフォールバックする。
+    """
+    versioned = []
+    for f in ASSETS.glob("roxy-icon-v*.ico"):
+        digits = "".join(c for c in f.stem.split("-v")[-1] if c.isdigit())
+        if digits:
+            versioned.append((int(digits), f))
+    if versioned:
+        return max(versioned)[1]
+    return ASSETS / "roxy-icon.ico"
+
+
+SRC = source_path()
 
 SVG_LOGO = """<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 256 256" width="256" height="256">
   <image width="256" height="256" xlink:href="data:image/png;base64,{b64}"/>
@@ -27,23 +45,44 @@ SVG_WORDMARK = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" w
 """
 
 
-def load_source():
+def load_frames():
+    """ico に含まれる全サイズを {辺の長さ: 画像} で返す。"""
     im = Image.open(SRC)
-    if hasattr(im, "ico"):          # ico からは最大サイズを取り出す
-        im.size = max(im.ico.sizes())
-    return im.convert("RGBA")
+    if not hasattr(im, "ico"):
+        return {im.size[0]: im.convert("RGBA")}
+    frames = {}
+    for size in im.ico.sizes():
+        if size[0] != size[1]:      # 正方形でないフレームは使わない
+            continue
+        im.size = size
+        frames[size[0]] = im.copy().convert("RGBA")
+    return frames
 
 
-def scaled(base, size, pad_ratio=0.0):
-    """size x size に収める。pad_ratio ぶん内側に余白を取る（タイル用）。"""
+def best_frame(frames, size):
+    """要求サイズ以上で最も近いフレームを選ぶ（無ければ最大）。"""
+    candidates = [n for n in frames if n >= size] or [max(frames)]
+    return frames[min(candidates)]
+
+
+def scaled(frames, size, pad_ratio=0.0):
+    """size x size に収める。pad_ratio ぶん内側に余白を取る（タイル用）。
+
+    元 ico が持つサイズはそのまま使い、縮小による劣化を避ける。
+    """
     inner = max(int(size * (1 - 2 * pad_ratio)), 1)
+    src = best_frame(frames, inner)
+    if src.size[0] != inner:
+        src = src.resize((inner, inner), Image.LANCZOS)
+    if inner == size:
+        return src
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    img.paste(base.resize((inner, inner), Image.LANCZOS), ((size - inner) // 2,) * 2)
+    img.paste(src, ((size - inner) // 2,) * 2)
     return img
 
 
 def main():
-    base = load_source()
+    base = load_frames()
     OUT.mkdir(parents=True, exist_ok=True)
     content = OUT / "content"
     content.mkdir(exist_ok=True)
@@ -75,7 +114,8 @@ def main():
     (content / "about-wordmark.svg").write_text(SVG_WORDMARK, encoding="utf-8")
     (content / "firefox-wordmark.svg").write_text(SVG_WORDMARK, encoding="utf-8")
 
-    print(f"生成完了: {OUT}  (元画像: {SRC.name})")
+    print("生成完了: %s" % OUT)
+    print("  元画像: %s  収録サイズ: %s" % (SRC.name, sorted(base)))
 
 
 if __name__ == "__main__":
