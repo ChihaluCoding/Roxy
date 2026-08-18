@@ -3,8 +3,8 @@
 source "$(dirname "$0")/common.sh"
 [ -d "$ENGINE/.git" ] || die "engine/ がありません。先に scripts/bootstrap.sh を実行してください。"
 
-log "engine/ を merlin-base に巻き戻します"
-git -C "$ENGINE" checkout --force merlin-base
+log "engine/ を roxy-base に巻き戻します"
+git -C "$ENGINE" checkout --force roxy-base
 git -C "$ENGINE" clean -fd -e obj- >/dev/null
 
 shopt -s nullglob
@@ -16,9 +16,9 @@ done
 # --- ブランディング ---
 # upstream の unofficial ブランディングを土台にコピーし、src/branding/ で上書きする。
 # （moz.build や configure.sh を自前で書き起こさずに済む）
-BR="$ENGINE/browser/branding/merlin"
+BR="$ENGINE/browser/branding/roxy"
 if [ ! -d "$BR" ]; then
-  log "ブランディング雛形を作成: browser/branding/merlin (unofficial ベース)"
+  log "ブランディング雛形を作成: browser/branding/roxy (unofficial ベース)"
   cp -r "$ENGINE/browser/branding/unofficial" "$BR"
 fi
 if [ -d "$ROOT/src/branding" ] && [ -n "$(ls -A "$ROOT/src/branding" 2>/dev/null)" ]; then
@@ -33,12 +33,12 @@ if [ -n "$(ls -A "$ROOT/src/prefs" 2>/dev/null)" ]; then
 ' ' ')"
   {
     echo ""
-    echo "// ==== Merlin defaults (src/prefs/) ===="
+    echo "// ==== Roxy defaults (src/prefs/) ===="
     cat "$ROOT"/src/prefs/*.js
   } >> "$ENGINE/browser/app/profile/firefox.js"
 fi
 
-# --- Merlin Layer ---
+# --- Roxy Layer ---
 # 新規ファイル群は engine/ 側の対応ディレクトリへコピーする。
 # 上流ファイルを書き換えないので、この経路は上流追従で壊れない。
 deploy() {  # deploy <src相対> <engine相対>
@@ -48,8 +48,8 @@ deploy() {  # deploy <src相対> <engine相対>
   mkdir -p "$ENGINE/$2"
   cp -r "$ROOT/$1/." "$ENGINE/$2/"
 }
-deploy src/merlin      browser/components/merlin
-deploy src/rules       browser/components/merlin/rules
-deploy src/extensions/merlin-adblock browser/extensions/merlin-adblock
+deploy src/roxy      browser/components/roxy
+deploy src/rules       browser/components/roxy/rules
+deploy src/extensions/roxy-adblock browser/extensions/roxy-adblock
 
 log "適用完了"

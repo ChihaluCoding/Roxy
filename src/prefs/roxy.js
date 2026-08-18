@@ -1,4 +1,4 @@
-// Merlin の既定 pref。ビルド時に browser/app/profile/firefox.js の末尾へ追記される。
+// Roxy の既定 pref。ビルド時に browser/app/profile/firefox.js の末尾へ追記される。
 // ユーザーが about:config で上書きできる「既定値」であり、強制ではない。
 // 強制したい項目は pref() ではなく lockPref 相当（policies.json）を使うこと。
 
@@ -38,7 +38,7 @@ pref("browser.safebrowsing.malware.enabled", true);
 pref("browser.safebrowsing.phishing.enabled", true);
 pref("browser.safebrowsing.downloads.enabled", true);
 
-// User-Agent は Firefox のまま。Merlin を名乗るとフィンガープリント上一意になるため
+// User-Agent は Firefox のまま。Roxy を名乗るとフィンガープリント上一意になるため
 // general.useragent.* は一切上書きしない。
 
 // ---- UI ----

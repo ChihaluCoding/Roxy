@@ -1,6 +1,6 @@
 # 独自機能の追加ポイント
 
-Merlin の主眼は独自機能。Firefox のどこに手を入れるかの地図。
+Roxy の主眼は独自機能。Firefox のどこに手を入れるかの地図。
 
 ## 1. UI を足す（ツールバー、サイドバー、パネル）
 - `browser/base/content/browser.xhtml` … ウィンドウの骨格 XUL/HTML。要素はここに足す
@@ -11,7 +11,7 @@ Merlin の主眼は独自機能。Firefox のどこに手を入れるかの地�
 
 ## 2. ページの内容に触る（DOM 読み取り、スクリプト注入）
 親プロセスと子プロセスが分離しているので **JSActor** を使う。
-- `browser/actors/MerlinChild.sys.mjs` / `MerlinParent.sys.mjs`
+- `browser/actors/RoxyChild.sys.mjs` / `RoxyParent.sys.mjs`
 - `browser/actors/moz.build` と `BrowserGlue.sys.mjs` の `ACTORS` 定義に登録
 
 ## 3. 設定値を持つ

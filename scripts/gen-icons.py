@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""assets/merlin-icon.ico から Merlin のブランディング画像一式を生成する。
+"""assets/roxy-icon.ico から Roxy のブランディング画像一式を生成する。
 
 元画像を差し替えたら、このスクリプトを再実行して apply-patches.sh を回す。
 生成物（src/branding/ 配下の画像）もコミットする。ビルド環境に Pillow が
@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "assets" / "merlin-icon.ico"
+SRC = ROOT / "assets" / "roxy-icon.ico"
 OUT = ROOT / "src" / "branding"
 
 SVG_LOGO = """<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 256 256" width="256" height="256">
@@ -22,7 +22,7 @@ SVG_LOGO = """<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3
 
 SVG_WORDMARK = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" width="320" height="64">
   <text x="0" y="32" fill="context-fill, currentColor" font-family="Segoe UI, Arial, sans-serif"
-        font-weight="600" font-size="44" dominant-baseline="central">Merlin</text>
+        font-weight="600" font-size="44" dominant-baseline="central">Roxy</text>
 </svg>
 """
 

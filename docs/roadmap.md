@@ -6,25 +6,25 @@
 | Phase | 内容 | 主な置き場所 | パッチ番号帯 |
 |---|---|---|---|
 | 1 | Firefox フォーク成立（無改造ビルド → ブランディング → 起動確認） | `src/branding/` | `0000-0099` |
-| 2 | Merlin 基盤（pref / Settings / Script Engine / 内蔵拡張の器） | `src/merlin/settings`, `src/merlin/script-engine` | `0100-0199` |
+| 2 | Roxy 基盤（pref / Settings / Script Engine / 内蔵拡張の器） | `src/roxy/settings`, `src/roxy/script-engine` | `0100-0199` |
 | 3 | YouTube（Compatibility Layer） | `src/rules/youtube/` | `0300-0399` |
-| 4 | AdBlock（内蔵拡張 + Filter Updater） | `src/extensions/merlin-adblock/` | `0400-0499` |
-| 5 | 推し活（Oshi Profile / ダッシュボード / 通知） | `src/merlin/oshi/` | `0500-0599` |
-| 6 | Audio / Media（Audio パネル / PiP / Screenshot） | `src/merlin/audio`, `src/merlin/media` | `0600-0699` |
-| 7 | Browser UI（縦タブ / ツリー / Toolbar / URLバー） | `src/merlin/ui/` | `0700-0799` |
-| 8 | Advanced（Network / DL / DevTools / Mozilla依存整理 / Update） | `src/merlin/network/` | `0800-0899` |
+| 4 | AdBlock（内蔵拡張 + Filter Updater） | `src/extensions/roxy-adblock/` | `0400-0499` |
+| 5 | 推し活（Oshi Profile / ダッシュボード / 通知） | `src/roxy/oshi/` | `0500-0599` |
+| 6 | Audio / Media（Audio パネル / PiP / Screenshot） | `src/roxy/audio`, `src/roxy/media` | `0600-0699` |
+| 7 | Browser UI（縦タブ / ツリー / Toolbar / URLバー） | `src/roxy/ui/` | `0700-0799` |
+| 8 | Advanced（Network / DL / DevTools / Mozilla依存整理 / Update） | `src/roxy/network/` | `0800-0899` |
 
 パッチ番号は帯の中で 10 刻み（`0110`, `0120`, …）。間に差し込めるようにする。
 
 ## Phase 1 の完了条件
 - [ ] `scripts/bootstrap.sh` 成功
 - [ ] 無改造で `scripts/build.sh` 成功（**ここを先に通す。改造は必ずその後**）
-- [ ] Merlin branding / アイコン / 名称
-- [ ] `scripts/run.sh` で起動、about:support に Merlin と表示される
+- [ ] Roxy branding / アイコン / 名称
+- [ ] `scripts/run.sh` で起動、about:support に Roxy と表示される
 
 ## Phase 2 の完了条件（ここが本命の基盤）
-- [ ] `merlin.*` pref が効く
-- [ ] `about:merlin` が開き、pref を読み書きできる
+- [ ] `roxy.*` pref が効く
+- [ ] `about:roxy` が開き、pref を読み書きできる
 - [ ] Script Engine が document-start で CSS/JS を注入できる
 - [ ] UserScript メタデータパーサが `@match` / `@run-at` を解釈する
 - [ ] 内蔵ルールが 1 本動く（例: 右クリック禁止の解除）

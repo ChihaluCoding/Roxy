@@ -11,14 +11,14 @@ OUT="$PATCHES/$NAME.patch"
 # パッチは「上流ファイルへの改変」だけを持つ。
 EXCLUDES=(
   ':!obj-*'
-  ':!browser/branding/merlin'
-  ':!browser/components/merlin'
-  ':!browser/extensions/merlin-adblock'
+  ':!browser/branding/roxy'
+  ':!browser/components/roxy'
+  ':!browser/extensions/roxy-adblock'
   ':!browser/app/profile/firefox.js'
 )
 
 git -C "$ENGINE" add -A -- "${EXCLUDES[@]}" >/dev/null
-git -C "$ENGINE" diff --cached --binary merlin-base -- "${EXCLUDES[@]}" > "$OUT"
+git -C "$ENGINE" diff --cached --binary roxy-base -- "${EXCLUDES[@]}" > "$OUT"
 if [ -s "$OUT" ]; then
   log "書き出し: patches/$NAME.patch ($(wc -l < "$OUT") 行)"
 else

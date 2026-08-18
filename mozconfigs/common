@@ -7,10 +7,10 @@ mk_add_options MOZ_PARALLEL_BUILD=10
 mk_add_options "export CARGO_BUILD_JOBS=10"
 mk_add_options "export RUSTC_WRAPPER="
 
-# --- Merlin ブランディング ---
-ac_add_options --with-app-name=merlin
-ac_add_options --with-app-basename=Merlin
-ac_add_options --with-branding=browser/branding/merlin
+# --- Roxy ブランディング ---
+ac_add_options --with-app-name=roxy
+ac_add_options --with-app-basename=Roxy
+ac_add_options --with-branding=browser/branding/roxy
 
 # --- リリース最適化 ---
 ac_add_options --enable-optimize

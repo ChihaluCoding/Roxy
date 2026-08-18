@@ -9,7 +9,7 @@ build.log
 build-j8.log
 README.md
 assets/
-assets/merlin-icon.ico
+assets/roxy-icon.ico
 docs/
 scripts/
 scripts/apply-patches.sh

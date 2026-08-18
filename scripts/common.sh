@@ -11,7 +11,7 @@ import json,sys
 d=json.load(open(sys.argv[1]))
 for k in sys.argv[2].split('.'): d=d[k]
 print(d)
-" "$ROOT/merlin.json" "$1"
+" "$ROOT/roxy.json" "$1"
 }
 
 APP_NAME="$(cfg name)"
@@ -24,8 +24,8 @@ case "$(uname -s)" in
   *)            HOST_OS=linux ;;
 esac
 
-log()  { printf '\033[36m[merlin]\033[0m %s\n' "$*"; }
-die()  { printf '\033[31m[merlin] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
+log()  { printf '\033[36m[roxy]\033[0m %s\n' "$*"; }
+die()  { printf '\033[31m[roxy] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 # Windows では MozillaBuild シェル内でのみ mach が動く
 require_mozbuild() {

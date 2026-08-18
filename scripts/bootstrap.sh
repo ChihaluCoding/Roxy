@@ -16,7 +16,7 @@ else
 fi
 
 # パッチ適用の基準点。以降 export-patch.sh はこことの差分を書き出す
-git -C "$ENGINE" tag -f merlin-base "$TAG" >/dev/null
+git -C "$ENGINE" tag -f roxy-base "$TAG" >/dev/null
 echo "$TAG" > "$ROOT/.upstream-tag"
 
 # mach bootstrap は対話プロンプトを出すことがあり、非対話実行では固まる。

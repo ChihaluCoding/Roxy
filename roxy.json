@@ -1,7 +1,7 @@
 {
-  "name": "Merlin",
-  "vendor": "Merlin Project",
-  "appId": "merlin@example.org",
+  "name": "Roxy",
+  "vendor": "Roxy Project",
+  "appId": "roxy@example.org",
   "upstream": {
     "remote": "https://github.com/mozilla-firefox/firefox.git",
     "channel": "release",

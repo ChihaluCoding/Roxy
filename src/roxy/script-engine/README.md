@@ -1,4 +1,4 @@
-# Merlin Script Engine
+# Roxy Script Engine
 
 **最優先。グループ2以降の機能はこの上に載る。**
 
@@ -31,6 +31,6 @@ script-engine/
 
 ## GM_* 互換
 
-`GM_getValue` / `GM_setValue` … 保存先は `merlin.script.storage`（JSONFile）。
+`GM_getValue` / `GM_setValue` … 保存先は `roxy.script.storage`（JSONFile）。
 `GM_xmlhttpRequest` … CORS を跨ぐため parent プロセス側で fetch して結果を返す。
 `GM_addStyle` / `GM_registerMenuCommand` … chrome 側に橋渡し。

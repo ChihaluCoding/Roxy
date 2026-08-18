@@ -1,4 +1,4 @@
-# Merlin
+# Roxy
 
 Firefox（mozilla-firefox/firefox）を上流とする、パッチ型フォークブラウザ。
 上流ソースはリポジトリに含めず、`patches/` と `src/` に自分の変更だけを保持する
@@ -8,12 +8,12 @@ Firefox（mozilla-firefox/firefox）を上流とする、パッチ型フォー�
 
 | パス | 役割 | レイヤー |
 |---|---|---|
-| `merlin.json` | 上流リポジトリ・タグ・ブランド名の設定 | – |
+| `roxy.json` | 上流リポジトリ・タグ・ブランド名の設定 | – |
 | `engine/` | 取得した Firefox ソース（**gitignore**。使い捨て） | – |
 | `src/rules/` | 内蔵ルール（汎用 / YouTube Compatibility Layer / UserCSS） | 1 |
-| `src/extensions/merlin-adblock/` | 内蔵広告ブロック拡張 + 独自フィルタ | 2 |
-| `src/merlin/` | Merlin Layer 本体（Settings, Script Engine, Audio, UI, Oshi …） | 3 |
-| `src/prefs/` | 既定 pref。`merlin.*` 名前空間 | 3 |
+| `src/extensions/roxy-adblock/` | 内蔵広告ブロック拡張 + 独自フィルタ | 2 |
+| `src/roxy/` | Roxy Layer 本体（Settings, Script Engine, Audio, UI, Oshi …） | 3 |
+| `src/prefs/` | 既定 pref。`roxy.*` 名前空間 | 3 |
 | `src/branding/` | ブランディングの上書き | – |
 | `patches/*.patch` | 上流ファイルへの改変。**最後の手段** | 4–5 |
 | `mozconfigs/` | ビルド設定。並列度は **10ジョブ固定** | – |
@@ -43,7 +43,7 @@ Windows は **必ず MozillaBuild シェル**（`c:\mozilla-build\start-shell.ba
 | [docs/features.md](docs/features.md) | 機能リスト（チェックボックス） |
 | [docs/adding-a-feature.md](docs/adding-a-feature.md) | Firefox 側のフック位置 |
 
-**Phase 2（Merlin 基盤 = Script Engine + Settings）が本命。**
+**Phase 2（Roxy 基盤 = Script Engine + Settings）が本命。**
 ここを先に作れば Phase 3 以降の大半は「ルールを足すだけ」で済む。
 
 ## 開発サイクル
@@ -60,7 +60,7 @@ Windows は **必ず MozillaBuild シェル**（`c:\mozilla-build\start-shell.ba
 
 ## 上流追従
 
-`merlin.json` の `upstream.tag` は `auto`（最新リリースタグを自動解決）。
+`roxy.json` の `upstream.tag` は `auto`（最新リリースタグを自動解決）。
 バージョンを固定したい場合は `"FIREFOX_153_0_RELEASE"` のように直接書く。
 上流更新後に `apply-patches.sh` が失敗したら、そのパッチが当たらなくなった合図。
 手で当て直して `export-patch.sh` で書き出し直す。

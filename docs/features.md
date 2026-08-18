@@ -1,7 +1,7 @@
 # 機能リスト
 
 実装レイヤーは `docs/architecture.md`、順序は `docs/roadmap.md`。
-L列 = 実装レイヤー（1:ルール 2:拡張 3:Merlin Layer 4:上流パッチ 5:Gecko）。
+L列 = 実装レイヤー（1:ルール 2:拡張 3:Roxy Layer 4:上流パッチ 5:Gecko）。
 
 ## 1. スクリプト／スタイル注入基盤 (Phase 2 / L3)
 - [ ] User Scripts（Tampermonkey 相当を内蔵）
@@ -43,15 +43,15 @@ Firefox のテーマ機能とは分離し、**Web コンテンツ側のダーク
 ## 4. 広告ブロック (Phase 4 / L2)
 - [ ] 起動時から有効な内蔵拡張
 - [ ] 通常のアンインストールを想定しない構成
-- [ ] Merlin Settings から ON/OFF、サイト単位 ON/OFF
+- [ ] Roxy Settings から ON/OFF、サイト単位 ON/OFF
 - [ ] ブロック数表示
 - [ ] フィルターリスト管理 / カスタムフィルター / 自動更新
 - [ ] Cosmetic Filtering / Scriptlets
-- [ ] Merlin 独自フィルタ（base / youtube / privacy / unbreak）
+- [ ] Roxy 独自フィルタ（base / youtube / privacy / unbreak）
 - [ ] Filter Updater（本体更新と分離）
 
 ## 5. 音声処理 (Phase 6 / L3)
-すべて 1 つの Merlin Audio パネルへ統合。Web Audio API を利用。
+すべて 1 つの Roxy Audio パネルへ統合。Web Audio API を利用。
 
 `MediaElementSource → Gain → Normalization → Compressor → Pitch → Channel → Destination`
 
@@ -71,16 +71,16 @@ Chromium の Document PiP API を前提にせず、**Firefox 既存 PiP 実装�
 ## 7. ブラウザ UI (Phase 7 / L3-L4)
 - [ ] 縦タブ / 横タブ切り替え / タブツリー / コンパクトモード
 - [ ] タブグループの外観変更 / サイドバー
-- [ ] Merlin Toolbar / Merlin メニュー / 推し活 UI
+- [ ] Roxy Toolbar / Roxy メニュー / 推し活 UI
 - [ ] URL バー拡張、bang 検索（`!yt` `!g` `!x` `!wiki` `!gh` をユーザー登録可能に）
-- [ ] Merlin 独自設定ページ
+- [ ] Roxy 独自設定ページ
 
-## 8. Merlin Settings (Phase 2 / L3)
-`about:merlin` 専用ページ、または about:preferences へ統合。
+## 8. Roxy Settings (Phase 2 / L3)
+`about:roxy` 専用ページ、または about:preferences へ統合。
 カテゴリ: General / Appearance / Tabs / YouTube / Oshi / Audio / AdBlock /
 User Scripts / Custom CSS / Privacy / Downloads / Advanced
 
-pref 名前空間は `merlin.*`（`src/prefs/merlin-features.js` に定義済み）。
+pref 名前空間は `roxy.*`（`src/prefs/roxy-features.js` に定義済み）。
 
 ## 9. 推し活機能 (Phase 5 / L3)
 特定 VTuber 専用にはせず、**ユーザーが自分の推しを設定できる構造**にする。
@@ -111,7 +111,7 @@ pref 名前空間は `merlin.*`（`src/prefs/merlin-features.js` に定義済み
 - [x] Telemetry 方針（pref + ビルド時無効化で対応済み）
 - [x] Crash Reporter（ビルド時無効化）
 - [ ] ブランド / ロゴ / 名称の置換 ← Phase 1
-- [x] **User-Agent: Firefox のまま変更しない**（決定）— Merlin を名乗るとフィンガープリント上一意になり、
+- [x] **User-Agent: Firefox のまま変更しない**（決定）— Roxy を名乗るとフィンガープリント上一意になり、
       サイト側の UA 判定でも壊れやすい。`general.useragent.*` の上書きは行わない
 - [ ] Pocket 整理 / Mozilla サービス依存の調査
 - [ ] Firefox Accounts / Sync 方針（自前サーバが要る）
