@@ -6,17 +6,21 @@ Firefox（mozilla-firefox/firefox）を上流とする、パッチ型フォー�
 
 ## 構成
 
-| パス | 役割 |
-|---|---|
-| `merlin.json` | 上流リポジトリ・タグ・ブランド名の設定 |
-| `engine/` | 取得した Firefox ソース（**gitignore**。使い捨て） |
-| `patches/*.patch` | 上流ファイルへの変更。番号順に適用 |
-| `src/branding/` | ブランディングの上書きファイル（コピーで配置） |
-| `src/features/` | 独自機能の新規ファイル置き場 |
-| `src/prefs/` | 既定 pref。ビルド時に firefox.js へ追記される |
-| `src/ui/` | 独自 CSS。`browser/themes/shared/merlin/` へ配置 |
-| `mozconfigs/` | ビルド設定。並列度は **8ジョブ固定** |
-| `scripts/` | 取得・適用・ビルド・パッケージ |
+| パス | 役割 | レイヤー |
+|---|---|---|
+| `merlin.json` | 上流リポジトリ・タグ・ブランド名の設定 | – |
+| `engine/` | 取得した Firefox ソース（**gitignore**。使い捨て） | – |
+| `src/rules/` | 内蔵ルール（汎用 / YouTube Compatibility Layer / UserCSS） | 1 |
+| `src/extensions/merlin-adblock/` | 内蔵広告ブロック拡張 + 独自フィルタ | 2 |
+| `src/merlin/` | Merlin Layer 本体（Settings, Script Engine, Audio, UI, Oshi …） | 3 |
+| `src/prefs/` | 既定 pref。`merlin.*` 名前空間 | 3 |
+| `src/branding/` | ブランディングの上書き | – |
+| `patches/*.patch` | 上流ファイルへの改変。**最後の手段** | 4–5 |
+| `mozconfigs/` | ビルド設定。並列度は **8ジョブ固定** | – |
+| `scripts/` | 取得・適用・ビルド・パッケージ | – |
+
+数字は実装レイヤー。**上のレイヤーで実現できる機能のために下を変更しない**のが最重要方針
+（[docs/architecture.md](docs/architecture.md)）。
 
 ## セットアップ
 
@@ -30,10 +34,17 @@ Windows は **必ず MozillaBuild シェル**（`c:\mozilla-build\start-shell.ba
 ./scripts/package.sh          # 配布物を engine/obj-*/dist/ に生成
 ```
 
-## 何をどう改造するか
+## ドキュメント
 
-[docs/customizing.md](docs/customizing.md) に 4 系統（pref / CSS / 新規ファイル / パッチ）の使い分けをまとめてある。
-上流追従で壊れにくい手段から順に検討すること。
+| | |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | レイヤー構造と、どの機能をどこに置くかの判断基準 |
+| [docs/roadmap.md](docs/roadmap.md) | Phase 1–8 と各完了条件 |
+| [docs/features.md](docs/features.md) | 機能リスト（チェックボックス） |
+| [docs/adding-a-feature.md](docs/adding-a-feature.md) | Firefox 側のフック位置 |
+
+**Phase 2（Merlin 基盤 = Script Engine + Settings）が本命。**
+ここを先に作れば Phase 3 以降の大半は「ルールを足すだけ」で済む。
 
 ## 開発サイクル
 
