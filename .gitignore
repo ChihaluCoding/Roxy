@@ -9,7 +9,6 @@ build.log
 build-j8.log
 README.md
 assets/
-assets/roxy-icon.ico
 docs/
 scripts/
 scripts/apply-patches.sh

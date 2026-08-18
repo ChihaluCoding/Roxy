@@ -52,4 +52,9 @@ deploy src/roxy      browser/components/roxy
 deploy src/rules       browser/components/roxy/rules
 deploy src/extensions/roxy-adblock browser/extensions/roxy-adblock
 
+# --- エンタープライズポリシー ---
+# policies.json は install 直下の distribution/ に置かれ、pref より強い強制力を持つ。
+# 配置先の moz.build への登録は patches/0012 側で行う。
+deploy src/policies   browser/app/distribution
+
 log "適用完了"

@@ -1,0 +1,46 @@
+diff --git a/browser/app/module.ver b/browser/app/module.ver
+index 5ef8d2a02a..165dda4990 100644
+--- a/browser/app/module.ver
++++ b/browser/app/module.ver
+@@ -1,4 +1,4 @@
+-WIN32_MODULE_COMPANYNAME=Mozilla Corporation
++WIN32_MODULE_COMPANYNAME=Roxy Project
+ WIN32_MODULE_COPYRIGHT=©Firefox and Mozilla Developers; available under the MPL 2 license.
+ WIN32_MODULE_PRODUCTVERSION=@MOZ_APP_WINVERSION@
+ WIN32_MODULE_PRODUCTVERSION_STRING=@MOZ_APP_VERSION@
+diff --git a/browser/app/pbproxy/module.ver b/browser/app/pbproxy/module.ver
+index 5ef8d2a02a..165dda4990 100644
+--- a/browser/app/pbproxy/module.ver
++++ b/browser/app/pbproxy/module.ver
+@@ -1,4 +1,4 @@
+-WIN32_MODULE_COMPANYNAME=Mozilla Corporation
++WIN32_MODULE_COMPANYNAME=Roxy Project
+ WIN32_MODULE_COPYRIGHT=©Firefox and Mozilla Developers; available under the MPL 2 license.
+ WIN32_MODULE_PRODUCTVERSION=@MOZ_APP_WINVERSION@
+ WIN32_MODULE_PRODUCTVERSION_STRING=@MOZ_APP_VERSION@
+diff --git a/browser/installer/windows/nsis/maintenanceservice_installer.nsi b/browser/installer/windows/nsis/maintenanceservice_installer.nsi
+index 22b45c86a3..dada440b0c 100644
+--- a/browser/installer/windows/nsis/maintenanceservice_installer.nsi
++++ b/browser/installer/windows/nsis/maintenanceservice_installer.nsi
+@@ -198,7 +198,7 @@ Section "MaintenanceService"
+   WriteRegStr HKLM "${MaintUninstallKey}" "DisplayIcon" \
+                    "$INSTDIR\Uninstall.exe,0"
+   WriteRegStr HKLM "${MaintUninstallKey}" "DisplayVersion" "${AppVersion}"
+-  WriteRegStr HKLM "${MaintUninstallKey}" "Publisher" "Mozilla"
++  WriteRegStr HKLM "${MaintUninstallKey}" "Publisher" "Roxy Project"
+   WriteRegStr HKLM "${MaintUninstallKey}" "Comments" "${BrandFullName}"
+   WriteRegDWORD HKLM "${MaintUninstallKey}" "NoModify" 1
+   ${GetSize} "$INSTDIR" "/S=0K" $R2 $R3 $R4
+diff --git a/browser/installer/windows/nsis/shared.nsh b/browser/installer/windows/nsis/shared.nsh
+index b81c7ef59b..cbaac8d319 100755
+--- a/browser/installer/windows/nsis/shared.nsh
++++ b/browser/installer/windows/nsis/shared.nsh
+@@ -701,7 +701,7 @@ FunctionEnd
+     ${WriteRegStr2} $RegHive "$0" "DisplayName" "${BrandFullNameInternal}$3 (${ARCH} ${AB_CD})" 0
+     ${WriteRegStr2} $RegHive "$0" "HelpLink" "${HelpLink}" 0
+     ${WriteRegStr2} $RegHive "$0" "InstallLocation" "$8" 0
+-    ${WriteRegStr2} $RegHive "$0" "Publisher" "Mozilla" 0
++    ${WriteRegStr2} $RegHive "$0" "Publisher" "Roxy Project" 0
+     ${WriteRegStr2} $RegHive "$0" "UninstallString" "$\"$8\uninstall\helper.exe$\"" 0
+     DeleteRegValue SHCTX "$0" "URLInfoAbout"
+ ; Don't add URLUpdateInfo which is the release notes url except for the release
