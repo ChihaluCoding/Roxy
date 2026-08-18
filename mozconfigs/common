@@ -1,10 +1,10 @@
 # 全ターゲット共通。各 mozconfig の先頭から include される。
 
-# --- ビルド並列度: CPU を使い切らない（ユーザー指定: 8） ---
-mk_add_options MOZ_MAKE_FLAGS="-j8"
-mk_add_options MOZ_PARALLEL_BUILD=8
+# --- ビルド並列度: CPU を使い切らない（ユーザー指定: 10 / 全20スレッド中） ---
+mk_add_options MOZ_MAKE_FLAGS="-j10"
+mk_add_options MOZ_PARALLEL_BUILD=10
 # Rust のコンパイルジョブも同様に絞る
-mk_add_options "export CARGO_BUILD_JOBS=8"
+mk_add_options "export CARGO_BUILD_JOBS=10"
 mk_add_options "export RUSTC_WRAPPER="
 
 # --- Merlin ブランディング ---
