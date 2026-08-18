@@ -111,8 +111,10 @@ pref 名前空間は `merlin.*`（`src/prefs/merlin-features.js` に定義済み
 - [x] Telemetry 方針（pref + ビルド時無効化で対応済み）
 - [x] Crash Reporter（ビルド時無効化）
 - [ ] ブランド / ロゴ / 名称の置換 ← Phase 1
-- [ ] Merlin User-Agent 方針（**変更するとフィンガープリント上むしろ目立つ**。要検討）
+- [x] **User-Agent: Firefox のまま変更しない**（決定）— Merlin を名乗るとフィンガープリント上一意になり、
+      サイト側の UA 判定でも壊れやすい。`general.useragent.*` の上書きは行わない
 - [ ] Pocket 整理 / Mozilla サービス依存の調査
 - [ ] Firefox Accounts / Sync 方針（自前サーバが要る）
 - [ ] Update Server 方針（`--disable-updater` 中。独自更新は Phase 8）
-- [ ] Safe Browsing 方針（**消すとセキュリティ機能を失う**。要検討）
+- [x] **Safe Browsing: 残す**（決定）— フィッシング/マルウェア保護を維持する。
+      `browser.safebrowsing.*` は無効化しない。プライバシー強化の名目でも削除対象にしない

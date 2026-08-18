@@ -31,6 +31,16 @@ pref("network.dns.disablePrefetch", true);
 pref("network.prefetch-next", false);
 pref("browser.send_pings", false);
 
+// ---- 決定事項: 無効化しないもの ----
+// Safe Browsing は残す（フィッシング/マルウェア保護）。既定値の明示であり、
+// プライバシー強化パッチで誤って落とさないための宣言も兼ねる。
+pref("browser.safebrowsing.malware.enabled", true);
+pref("browser.safebrowsing.phishing.enabled", true);
+pref("browser.safebrowsing.downloads.enabled", true);
+
+// User-Agent は Firefox のまま。Merlin を名乗るとフィンガープリント上一意になるため
+// general.useragent.* は一切上書きしない。
+
 // ---- UI ----
 pref("browser.tabs.inTitlebar", 1);
 pref("browser.compactmode.show", true);
