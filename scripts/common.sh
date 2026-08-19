@@ -8,7 +8,7 @@ PATCHES="$ROOT/patches"
 cfg() {
   python -c "
 import json,sys
-d=json.load(open(sys.argv[1]))
+d=json.load(open(sys.argv[1], encoding='utf-8'))
 for k in sys.argv[2].split('.'): d=d[k]
 print(d)
 " "$ROOT/roxy.json" "$1"

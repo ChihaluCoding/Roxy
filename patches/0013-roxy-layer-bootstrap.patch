@@ -1,0 +1,36 @@
+diff --git a/browser/components/BrowserGlue.sys.mjs b/browser/components/BrowserGlue.sys.mjs
+index 97dee13c12..1bffbe03fd 100644
+--- a/browser/components/BrowserGlue.sys.mjs
++++ b/browser/components/BrowserGlue.sys.mjs
+@@ -9,6 +9,7 @@ const lazy = {};
+ 
+ ChromeUtils.defineESModuleGetters(lazy, {
+   AboutHomeStartupCache: "resource:///modules/AboutHomeStartupCache.sys.mjs",
++  RoxyLayer: "resource:///modules/roxy/RoxyLayer.sys.mjs",
+   AWToolbarButton: "resource:///modules/aboutwelcome/AWToolbarUtils.sys.mjs",
+   ASRouter: "resource:///modules/asrouter/ASRouter.sys.mjs",
+   ASRouterDefaultConfig:
+@@ -387,6 +388,9 @@ BrowserGlue.prototype = {
+   _beforeUIStartup: function BG__beforeUIStartup() {
+     lazy.SessionStartup.init();
+ 
++    // Roxy Layer の起動。上流ファイルへのフックはこの 1 箇所だけに保つこと。
++    lazy.RoxyLayer.init();
++
+     // check if we're in safe mode
+     if (Services.appinfo.inSafeMode) {
+       Services.ww.openWindow(
+diff --git a/browser/components/moz.build b/browser/components/moz.build
+index d1d769ab09..df7e79b77b 100644
+--- a/browser/components/moz.build
++++ b/browser/components/moz.build
+@@ -81,6 +81,9 @@ DIRS += [
+     "webrtc",
+ ]
+ 
++# Roxy Layer（src/roxy/ からコピー配置される）
++DIRS += ["roxy"]
++
+ DIRS += ["build"]
+ 
+ if CONFIG["MOZ_SELECTABLE_PROFILES"]:

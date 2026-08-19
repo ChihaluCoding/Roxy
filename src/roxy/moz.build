@@ -1,0 +1,12 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Roxy Layer のモジュール登録。
+# ここに並べたファイルは resource:///modules/roxy/<name> で参照できる。
+# 新しいサブモジュールを足すときは、このリストに追記するだけでよい
+# （上流ファイルへのパッチは増やさない）。
+
+EXTRA_JS_MODULES.roxy += [
+    "RoxyLayer.sys.mjs",
+]
