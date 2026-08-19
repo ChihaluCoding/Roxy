@@ -12,6 +12,7 @@
 
 import { ScriptEngine } from "resource:///modules/roxy/ScriptEngine.sys.mjs";
 import { ValueStore } from "resource:///modules/roxy/ValueStore.sys.mjs";
+import { XhrService } from "resource:///modules/roxy/XhrService.sys.mjs";
 
 export class RoxyScriptParent extends JSWindowActorParent {
   async receiveMessage(message) {
@@ -33,6 +34,46 @@ export class RoxyScriptParent extends JSWindowActorParent {
         return null;
       }
 
+      case "Roxy:GM:Xhr": {
+        const { details, requestId, scriptId } = message.data;
+        const script = ScriptEngine.getScriptById(scriptId);
+        return XhrService.request(details, {
+          requestId,
+          connect: script?.meta?.connect ?? [],
+          pageHost: this._pageHost(),
+          scriptName: script?.name ?? scriptId,
+        });
+      }
+
+      case "Roxy:GM:AbortXhr": {
+        XhrService.abort(message.data.requestId);
+        return null;
+      }
+
+      case "Roxy:GM:OpenInTab": {
+        const { url, active } = message.data;
+        const win = Services.wm.getMostRecentWindow("navigator:browser");
+        if (!win) {
+          return null;
+        }
+        // ユーザースクリプト由来の URL なので、必ずコンテンツ権限で開く。
+        win.openWebLinkIn(url, "tab", {
+          inBackground: !active,
+          triggeringPrincipal:
+            Services.scriptSecurityManager.createNullPrincipal({}),
+        });
+        return null;
+      }
+
+      case "Roxy:GM:SetClipboard": {
+        const { text } = message.data;
+        const helper = Cc[
+          "@mozilla.org/widget/clipboardhelper;1"
+        ].getService(Ci.nsIClipboardHelper);
+        helper.copyString(String(text));
+        return null;
+      }
+
       case "Roxy:Log": {
         // content 側の例外を親のコンソールに集約する。
         // ページのコンソールだと気づかないため。
@@ -42,5 +83,16 @@ export class RoxyScriptParent extends JSWindowActorParent {
       }
     }
     return null;
+  }
+
+  /**
+   * リクエスト元ページのホスト。@connect の判定に使う。
+   */
+  _pageHost() {
+    try {
+      return this.browsingContext?.currentWindowGlobal?.documentURI?.host ?? "";
+    } catch (e) {
+      return "";
+    }
   }
 }

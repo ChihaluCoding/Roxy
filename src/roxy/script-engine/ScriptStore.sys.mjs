@@ -19,6 +19,7 @@ const DIR_NAME = "userscripts";
 const STATE_FILENAME = "userscripts-state.json";
 
 const SAMPLE_FILENAME = "roxy-hello.user.js";
+const XHR_SAMPLE_FILENAME = "roxy-xhr-test.user.js";
 const SAMPLE_CODE = `// ==UserScript==
 // @name        Roxy Hello
 // @namespace   roxy
@@ -51,6 +52,42 @@ banner.textContent =
 document.documentElement.appendChild(banner);
 
 console.log("[Roxy UserScript] GM_info =", GM_info);
+`;
+
+const XHR_SAMPLE_CODE = `// ==UserScript==
+// @name        Roxy XHR Test
+// @namespace   roxy
+// @version     1.0
+// @description GM_xmlhttpRequest の動作確認。@connect の効きも確認できる。
+// @match       https://example.com/*
+// @run-at      document-idle
+// @grant       GM_xmlhttpRequest
+// @grant       GM_addStyle
+// @connect     example.org
+// ==/UserScript==
+
+// @connect に宣言済み → 成功するはず
+GM_xmlhttpRequest({
+  url: "https://example.org/",
+  method: "GET",
+  onload(res) {
+    console.log("[Roxy XHR] 成功:", res.status, res.responseText.length + " バイト");
+  },
+  onerror(res) {
+    console.error("[Roxy XHR] 失敗:", res.error);
+  },
+});
+
+// @connect に無いホスト → 遮断されるはず
+GM_xmlhttpRequest({
+  url: "https://www.mozilla.org/",
+  onload() {
+    console.warn("[Roxy XHR] 遮断されるべきリクエストが通りました");
+  },
+  onerror(res) {
+    console.log("[Roxy XHR] 想定どおり遮断:", res.error);
+  },
+});
 `;
 
 export const ScriptStore = {
@@ -123,6 +160,10 @@ export const ScriptStore = {
       await IOUtils.writeUTF8(
         PathUtils.join(this.dir, SAMPLE_FILENAME),
         SAMPLE_CODE
+      );
+      await IOUtils.writeUTF8(
+        PathUtils.join(this.dir, XHR_SAMPLE_FILENAME),
+        XHR_SAMPLE_CODE
       );
     }
   },

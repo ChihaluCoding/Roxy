@@ -13,6 +13,11 @@
  * （Violentmonkey と同じ方式）。
  */
 
+import {
+  setTimeout,
+  clearTimeout,
+} from "resource://gre/modules/Timer.sys.mjs";
+
 const DIR_NAME = "userscripts-data";
 
 // 書き込みが連続したときにディスクを叩きすぎないための遅延（ミリ秒）

@@ -118,6 +118,7 @@ export class RoxyScriptChild extends JSWindowActorChild {
         script,
         window: win,
         send: (name, data) => this.sendAsyncMessage(name, data),
+        query: (name, data) => this.sendQuery(name, data),
       });
     } catch (e) {
       this.#reportError(script, `GM API を公開できません: ${e}`);

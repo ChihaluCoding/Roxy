@@ -131,6 +131,13 @@ export const ScriptEngine = {
     return result;
   },
 
+  /**
+   * ID からスクリプト定義を引く。@connect の判定などに使う。
+   */
+  getScriptById(scriptId) {
+    return this._scripts.find(s => s.id === scriptId) ?? null;
+  },
+
   // ---- about:roxy から呼ばれる操作 ----
 
   /**
