@@ -20,21 +20,34 @@ const SAMPLE_CODE = `// ==UserScript==
 // @name        Roxy Hello
 // @namespace   roxy
 // @version     1.0
-// @description Script Engine の動作確認用。example.com を開くと動く。
+// @description Script Engine と GM API の動作確認用。example.com で動く。
 // @match       https://example.com/*
 // @match       https://*.example.com/*
 // @run-at      document-end
+// @grant       GM_addStyle
+// @grant       GM_setValue
+// @grant       GM_getValue
 // ==/UserScript==
 
-console.log("[Roxy UserScript] 動作しました:", location.href);
+// 起動回数を数える（GM_setValue / GM_getValue の確認）
+const count = (GM_getValue("count", 0) || 0) + 1;
+GM_setValue("count", count);
+
+GM_addStyle(\`
+  #roxy-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 2147483647;
+    background: #5b2d8e; color: #fff; font: 14px/1.6 sans-serif;
+    text-align: center; padding: 8px;
+  }
+\`);
 
 const banner = document.createElement("div");
-banner.textContent = "Roxy Script Engine 動作確認";
-banner.style.cssText =
-  "position:fixed;top:0;left:0;right:0;z-index:2147483647;" +
-  "background:#5b2d8e;color:#fff;font:14px/1.6 sans-serif;" +
-  "text-align:center;padding:8px";
+banner.id = "roxy-banner";
+banner.textContent =
+  \`Roxy Script Engine 動作確認 / 表示回数: \${count} / handler: \${GM_info.scriptHandler}\`;
 document.documentElement.appendChild(banner);
+
+console.log("[Roxy UserScript] GM_info =", GM_info);
 `;
 
 export const ScriptStore = {
@@ -107,6 +120,7 @@ export const ScriptStore = {
         path,
         code,
         meta,
+        metaStr: meta.metaStr,
         rules: UrlMatcher.compile(meta),
       });
     }

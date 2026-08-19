@@ -67,6 +67,8 @@ export const MetadataParser = {
       connect: [],
       runAt: "document-idle",
       noframes: false,
+      // GM_info.scriptMetaStr 用に生のブロックを保持する
+      metaStr: block[0],
       extras: {},
     };
 

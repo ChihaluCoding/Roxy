@@ -15,6 +15,7 @@
  */
 
 import { ScriptStore } from "resource:///modules/roxy/ScriptStore.sys.mjs";
+import { ValueStore } from "resource:///modules/roxy/ValueStore.sys.mjs";
 import { UrlMatcher } from "resource:///modules/roxy/UrlMatcher.sys.mjs";
 
 const ACTOR_NAME = "RoxyScript";
@@ -105,11 +106,23 @@ export const ScriptEngine = {
       if (!UrlMatcher.test(script.rules, url)) {
         continue;
       }
+      // GM_getValue は同期 API なので、実行前に値一式を渡しておく。
+      const values = await ValueStore.load(script.id);
+
       result.push({
         id: script.id,
         name: script.name,
         code: script.code,
         runAt: script.meta.runAt,
+        grant: script.meta.grant,
+        meta: script.meta,
+        metaStr: script.metaStr,
+        values,
+        handlerName: Services.prefs.getStringPref(
+          "roxy.script.handler_name",
+          "Violentmonkey"
+        ),
+        engineVersion: Services.appinfo.version,
       });
     }
     return result;

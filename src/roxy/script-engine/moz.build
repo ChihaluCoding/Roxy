@@ -6,10 +6,12 @@
 # （ディレクトリは分けるが、参照 URI はフラットに保つ）。
 
 EXTRA_JS_MODULES.roxy += [
+    "GMApi.sys.mjs",
     "MetadataParser.sys.mjs",
     "RoxyScriptChild.sys.mjs",
     "RoxyScriptParent.sys.mjs",
     "ScriptEngine.sys.mjs",
     "ScriptStore.sys.mjs",
     "UrlMatcher.sys.mjs",
+    "ValueStore.sys.mjs",
 ]

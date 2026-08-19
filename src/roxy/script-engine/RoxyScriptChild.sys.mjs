@@ -13,6 +13,8 @@
  * 処理は、必ず親アクターへ委譲すること。
  */
 
+import { GMApi } from "resource:///modules/roxy/GMApi.sys.mjs";
+
 const Cu = Components.utils;
 
 // DOM イベント名 → @run-at の値
@@ -84,6 +86,13 @@ export class RoxyScriptChild extends JSWindowActorChild {
       return;
     }
 
+    // Violentmonkey と同じ挙動: @grant none はサンドボックスを使わず、
+    // ページの世界でそのまま実行する。GM API も公開しない。
+    if (script.grant?.length === 1 && script.grant[0] === "none") {
+      this.#executeInPage(script, win);
+      return;
+    }
+
     let sandbox;
     try {
       sandbox = Cu.Sandbox(win, {
@@ -96,11 +105,22 @@ export class RoxyScriptChild extends JSWindowActorChild {
         sandboxName: `roxy-userscript:${script.id}`,
       });
 
-      // ページの世界へ意図的に降りるための出口。
-      // GM API（M3）を足すまでは、これが唯一の越境手段。
+      // ページの世界へ意図的に降りるための出口
       sandbox.unsafeWindow = Cu.waiveXrays(win);
     } catch (e) {
       this.#reportError(script, `サンドボックスを作れません: ${e}`);
+      return;
+    }
+
+    try {
+      GMApi.install({
+        sandbox,
+        script,
+        window: win,
+        send: (name, data) => this.sendAsyncMessage(name, data),
+      });
+    } catch (e) {
+      this.#reportError(script, `GM API を公開できません: ${e}`);
       return;
     }
 
@@ -114,6 +134,28 @@ export class RoxyScriptChild extends JSWindowActorChild {
       );
     } catch (e) {
       this.#reportError(script, `${e}\n${e?.stack ?? ""}`);
+    }
+  }
+
+  /**
+   * @grant none のスクリプトをページの世界で実行する。
+   *
+   * サンドボックスを挟まないため、ページ側の JS から見えるし触れる。
+   * Violentmonkey がこの挙動なので、互換性のために合わせている。
+   */
+  #executeInPage(script, win) {
+    try {
+      const sandbox = Cu.waiveXrays(win);
+      Cu.evalInSandbox(
+        script.code,
+        sandbox,
+        "latest",
+        `roxy-userscript:${script.id}`,
+        1
+      );
+    } catch (e) {
+      this.#reportError(script, `${e}
+${e?.stack ?? ""}`);
     }
   }
 

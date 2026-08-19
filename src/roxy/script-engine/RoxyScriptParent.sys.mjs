@@ -11,6 +11,7 @@
  */
 
 import { ScriptEngine } from "resource:///modules/roxy/ScriptEngine.sys.mjs";
+import { ValueStore } from "resource:///modules/roxy/ValueStore.sys.mjs";
 
 export class RoxyScriptParent extends JSWindowActorParent {
   async receiveMessage(message) {
@@ -18,6 +19,18 @@ export class RoxyScriptParent extends JSWindowActorParent {
       case "Roxy:GetScripts": {
         const { url, isTopLevel } = message.data;
         return ScriptEngine.getMatchingScripts(url, isTopLevel);
+      }
+
+      case "Roxy:GM:SetValue": {
+        const { scriptId, key, value } = message.data;
+        await ValueStore.set(scriptId, key, value);
+        return null;
+      }
+
+      case "Roxy:GM:DeleteValue": {
+        const { scriptId, key } = message.data;
+        await ValueStore.delete(scriptId, key);
+        return null;
       }
 
       case "Roxy:Log": {
