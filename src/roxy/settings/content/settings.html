@@ -68,9 +68,31 @@
           <span id="editor-name" class="editor-name"></span>
           <span id="editor-status" class="status"></span>
         </div>
-        <p class="hint">
-          Ctrl+S で保存 / Ctrl+F で検索 / Ctrl+/ で行コメント / Tab でインデント
-        </p>
+
+        <div class="toolbar editor-tools">
+          <span class="tool-group">
+            <button id="ed-undo" title="元に戻す (Ctrl+Z)">元に戻す</button>
+            <button id="ed-redo" title="やり直し (Ctrl+Shift+Z)">やり直し</button>
+          </span>
+          <span class="tool-group">
+            <button id="ed-find" title="検索 (Ctrl+F)">検索</button>
+            <button id="ed-find-next" title="次を検索 (Ctrl+G)">次へ</button>
+            <button id="ed-find-prev" title="前を検索 (Ctrl+Shift+G)">前へ</button>
+            <button id="ed-replace" title="置換 (Ctrl+Shift+F)">置換</button>
+          </span>
+          <span class="tool-group">
+            <button id="ed-jump" title="指定行へ移動 (Ctrl+J)">行へ移動</button>
+            <button id="ed-reindent" title="全体を自動インデント">整形</button>
+          </span>
+          <span class="tool-group">
+            <button id="ed-fold-all" title="すべて折りたたむ">折りたたむ</button>
+            <button id="ed-unfold-all" title="すべて展開">展開</button>
+          </span>
+          <span class="tool-group">
+            <button id="ed-lint" title="構文チェックを実行">構文チェック</button>
+            <button id="ed-wrap" title="長い行を折り返す">折り返し</button>
+          </span>
+        </div>
 
         <!-- CodeMirror が読み込めなかった場合はこの textarea がそのまま
            - 簡易エディタとして機能する。 -->
@@ -81,6 +103,12 @@
           autocomplete="off"
           aria-label="ユーザースクリプトのコード"
         ></textarea>
+
+        <div class="editor-statusbar">
+          <span id="ed-pos">1:1</span>
+          <span id="ed-lines"></span>
+          <span id="ed-engine"></span>
+        </div>
       </section>
     </main>
   </body>

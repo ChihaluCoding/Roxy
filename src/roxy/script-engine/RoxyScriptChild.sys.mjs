@@ -146,7 +146,17 @@ export class RoxyScriptChild extends JSWindowActorChild {
    */
   #executeInPage(script, win) {
     try {
-      const sandbox = Cu.waiveXrays(win);
+      // evalInSandbox には Cu.Sandbox で作った対象が必要で、
+      // ページの window をそのまま渡すと NS_ERROR_ILLEGAL_VALUE になる。
+      // Xray を外したサンドボックスを作り、ページ側のオブジェクトへ
+      // 直接触れる状態にする（@grant none の意図に合わせる）。
+      const sandbox = Cu.Sandbox(win, {
+        sandboxPrototype: win,
+        wantXrays: false,
+        wantComponents: false,
+        sameZoneAs: win,
+        sandboxName: `roxy-userscript-page:${script.id}`,
+      });
       Cu.evalInSandbox(
         script.code,
         sandbox,
@@ -162,7 +172,12 @@ ${e?.stack ?? ""}`);
 
   #reportError(script, detail) {
     try {
-      this.sendAsyncMessage("Roxy:Log", { scriptName: script.name, detail });
+      this.sendAsyncMessage("Roxy:Log", {
+        scriptId: script.id,
+        scriptName: script.name,
+        detail,
+        url: this.document?.documentURI ?? "",
+      });
     } catch (e) {
       // アクターが既に切れている場合は握りつぶす
     }

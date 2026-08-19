@@ -19,13 +19,24 @@ import { ScriptStore } from "resource:///modules/roxy/ScriptStore.sys.mjs";
 import { ValueStore } from "resource:///modules/roxy/ValueStore.sys.mjs";
 import { UrlMatcher } from "resource:///modules/roxy/UrlMatcher.sys.mjs";
 
+const Cu = Components.utils;
+
 const ACTOR_NAME = "RoxyScript";
+
+// スクリプト1件あたりに保持する実行時エラーの上限。
+// 同じ失敗が繰り返し記録され続けてもメモリを食わないようにする。
+const MAX_ERRORS_PER_SCRIPT = 20;
 const PREF_ENABLED = "roxy.script.enabled";
 
 export const ScriptEngine = {
   _initialized: false,
   _scripts: [],
   _loadPromise: null,
+  /**
+   * スクリプトID → 実行時エラーの配列（新しい順）。
+   * ブラウザを閉じるまでの揮発。ディスクには書かない。
+   */
+  _errors: new Map(),
 
   init() {
     if (this._initialized) {
@@ -132,6 +143,80 @@ export const ScriptEngine = {
     return result;
   },
 
+  // ---- 実行時エラーの記録 ----
+
+  /**
+   * content 側で起きた例外を控える。
+   * コンソールを開かなくても about:roxy で気づけるようにするのが目的。
+   */
+  recordError(scriptId, detail, url) {
+    if (!scriptId) {
+      return;
+    }
+    const list = this._errors.get(scriptId) ?? [];
+    list.unshift({ time: Date.now(), detail: String(detail), url: url ?? "" });
+    if (list.length > MAX_ERRORS_PER_SCRIPT) {
+      list.length = MAX_ERRORS_PER_SCRIPT;
+    }
+    this._errors.set(scriptId, list);
+  },
+
+  getErrors(scriptId) {
+    return this._errors.get(scriptId) ?? [];
+  },
+
+  clearErrors(scriptId) {
+    if (scriptId) {
+      this._errors.delete(scriptId);
+    } else {
+      this._errors.clear();
+    }
+  },
+
+  /**
+   * 構文チェック。コードは実行しない。
+   *
+   * about:roxy 側で new Function を使うと CSP で遮断されるため、
+   * 検査はこのモジュール（＝ドキュメントの CSP が効かない場所）で行う。
+   *
+   * 関数式として包んで解析させ、呼び出さない。こうすると構文エラーだけを
+   * 検出でき、未保存のユーザースクリプトが実行されることはない。
+   *
+   * @returns {object} { ok, message, line }
+   */
+  checkSyntax(code) {
+    // 包む行を 1 行目に置き、コード 1 行目が行番号 1 になるよう合わせる
+    const wrapped = `(function(){
+${code}
+})`;
+
+    try {
+      const sandbox = Cu.Sandbox(
+        Services.scriptSecurityManager.createNullPrincipal({}),
+        { sandboxName: "roxy-syntax-check" }
+      );
+      // 第6引数 enforceFilenameRestrictions は省略時 true で、
+      // filename が既知のスキームでないと "unsafe filename" で弾かれる。
+      // ここは構文解析用の使い捨てなので検証を無効にする。
+      Cu.evalInSandbox(
+        wrapped,
+        sandbox,
+        "latest",
+        "roxy-syntax-check.js",
+        0,
+        false
+      );
+      return { ok: true };
+    } catch (e) {
+      const line = Number(e?.lineNumber);
+      return {
+        ok: false,
+        message: String(e?.message ?? e),
+        line: Number.isFinite(line) && line >= 1 ? line : null,
+      };
+    }
+  },
+
   /**
    * ID からスクリプト定義を引く。@connect の判定などに使う。
    */
@@ -148,9 +233,13 @@ export const ScriptEngine = {
     if (this._loadPromise) {
       await this._loadPromise;
     }
-    return this._scripts.map(s => ({
+    return this._scripts.map(s => {
+      const errors = this.getErrors(s.id);
+      return {
       id: s.id,
       name: s.name,
+      errorCount: errors.length,
+      lastError: errors[0] ?? null,
       enabled: s.enabled,
       path: s.path,
       version: s.meta.version,
@@ -159,7 +248,8 @@ export const ScriptEngine = {
       match: s.meta.match,
       include: s.meta.include,
       grant: s.meta.grant,
-    }));
+      };
+    });
   },
 
   async setEnabled(scriptId, enabled) {

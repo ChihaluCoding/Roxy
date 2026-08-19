@@ -1,0 +1,60 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+<!-- Roxy panel -->
+
+<script src="chrome://roxy/content/preferences.js"/>
+<html:template id="template-paneRoxy">
+
+<hbox id="roxyCategory"
+      class="subcategory"
+      hidden="true"
+      data-category="paneRoxy">
+  <html:h1>Roxy</html:h1>
+</hbox>
+
+<groupbox id="roxyGeneralGroup" data-category="paneRoxy" hidden="true">
+  <label><html:h2>基本</html:h2></label>
+
+  <checkbox id="roxyEnabled"
+            preference="roxy.enabled"
+            label="Roxy の機能を有効にする"/>
+  <description class="indent tip-caption">
+    無効にすると Roxy 独自の機能がすべて停止します。変更の反映には再起動が必要です。
+  </description>
+</groupbox>
+
+<groupbox id="roxyUserScriptGroup" data-category="paneRoxy" hidden="true">
+  <label><html:h2>ユーザースクリプト</html:h2></label>
+
+  <checkbox id="roxyScriptEnabled"
+            preference="roxy.script.enabled"
+            label="ユーザースクリプトを実行する"/>
+  <description class="indent tip-caption">
+    変更の反映には再起動が必要です。
+  </description>
+
+  <hbox class="indent">
+    <button id="roxyOpenManager"
+            label="ユーザースクリプトを管理…"/>
+  </hbox>
+  <description class="indent tip-caption">
+    スクリプトの追加・編集・削除と、実行時エラーの確認ができます。
+  </description>
+</groupbox>
+
+<groupbox id="roxyScriptSecurityGroup" data-category="paneRoxy" hidden="true">
+  <label><html:h2>ユーザースクリプトの通信</html:h2></label>
+
+  <checkbox id="roxyEnforceConnect"
+            preference="roxy.script.gmxhr.enforce_connect"
+            label="GM_xmlhttpRequest の接続先を @connect の宣言に限定する"/>
+  <description class="indent tip-caption">
+    この API は同一オリジンポリシーを迂回します。無効にすると、
+    スクリプトが任意のサイトへあなたの Cookie 付きでリクエストできるようになります。
+    理由がなければ有効のままにしてください。
+  </description>
+</groupbox>
+
+</html:template>

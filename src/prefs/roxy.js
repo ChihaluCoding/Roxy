@@ -12,6 +12,10 @@ pref("app.shield.optoutstudies.enabled", false);
 pref("browser.discovery.enabled", false);
 pref("browser.ping-centre.telemetry", false);
 
+// ---- Mozilla 固有の案内 ----
+// 設定画面の「Mozilla からのご案内」。表示だけでなく機能ごと止める。
+pref("browser.preferences.moreFromMozilla", false);
+
 // ---- 新規タブ / ホームのスポンサーコンテンツ ----
 pref("browser.newtabpage.activity-stream.showSponsored", false);
 pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);

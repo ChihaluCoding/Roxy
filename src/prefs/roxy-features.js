@@ -11,6 +11,16 @@ pref("roxy.script.builtin_rules.enabled", true);
 pref("roxy.script.rules.autoupdate", true);
 pref("roxy.script.rules.update_interval_hours", 24);
 
+// GM_xmlhttpRequest の接続先を @connect の宣言に限定する。
+// この API は同一オリジンポリシーを迂回するため、既定で有効にする。
+// 無効にすると、スクリプトが任意のサイトへ利用者の Cookie 付きで
+// リクエストできるようになる。
+pref("roxy.script.gmxhr.enforce_connect", true);
+
+// GM_info.scriptHandler が名乗る処理系名。既存スクリプトが処理系を
+// 判定して分岐することがあるため、互換性を優先して既定は Violentmonkey。
+pref("roxy.script.handler_name", "Violentmonkey");
+
 // ---- 汎用ルール (Phase 2) ----
 pref("roxy.rules.allow_selection", true);   // テキスト選択禁止の解除
 pref("roxy.rules.allow_copy", true);

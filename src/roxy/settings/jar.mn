@@ -7,3 +7,5 @@ roxy.jar:
   content/settings.html   (content/settings.html)
   content/settings.css    (content/settings.css)
   content/settings.js     (content/settings.js)
+  content/preferences.js  (content/preferences.js)
+  content/preferences.css (content/preferences.css)

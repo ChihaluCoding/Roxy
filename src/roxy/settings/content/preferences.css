@@ -1,0 +1,22 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* about:preferences の Roxy 向け調整。
+ *
+ * Mozilla 固有の項目を左の一覧から消す。
+ *
+ * 機能そのものは別経路で無効化している。
+ *   Firefox Labs        … policies.json の FirefoxLabs: false
+ *   Mozilla からのご案内 … pref browser.preferences.moreFromMozilla
+ * ここでの CSS は、それらが何らかの理由で復活したときの押さえと、
+ * 「Firefox について」（無効化する機能を持たず表示だけの項目）の非表示。
+ *
+ * 要素ごと削除すると preferences.js が null 参照で落ちる箇所があるため、
+ * DOM は残したまま隠す。 */
+
+#category-experimental,
+#category-about-firefox,
+#category-more-from-mozilla {
+  display: none !important;
+}

@@ -33,6 +33,52 @@ function chip(text) {
   return span;
 }
 
+/**
+ * 直近の実行時エラーを表示する。
+ *
+ * 構文チェックでは綴りの誤り（coolnsole など）は検出できない。
+ * それらは実行して初めて分かるので、結果をここに出す。
+ */
+function renderError(script) {
+  const box = document.createElement("div");
+  box.className = "script-error";
+
+  const head = document.createElement("div");
+  head.className = "script-error-head";
+
+  const label = document.createElement("span");
+  const when = new Date(script.lastError.time).toLocaleTimeString();
+  label.textContent =
+    script.errorCount > 1
+      ? `実行時エラー ${script.errorCount} 件（最新 ${when}）`
+      : `実行時エラー（${when}）`;
+  head.appendChild(label);
+
+  const clear = document.createElement("button");
+  clear.textContent = "消去";
+  clear.addEventListener("click", async () => {
+    ScriptEngine.clearErrors(script.id);
+    await refresh();
+  });
+  head.appendChild(clear);
+  box.appendChild(head);
+
+  const detail = document.createElement("pre");
+  detail.className = "script-error-detail";
+  // エラー文言はページ由来の文字列を含みうるので必ず textContent で入れる
+  detail.textContent = script.lastError.detail;
+  box.appendChild(detail);
+
+  if (script.lastError.url) {
+    const where = document.createElement("div");
+    where.className = "script-error-url";
+    where.textContent = script.lastError.url;
+    box.appendChild(where);
+  }
+
+  return box;
+}
+
 function renderScript(script) {
   const li = document.createElement("li");
   li.className = "script" + (script.enabled ? "" : " is-disabled");
@@ -91,6 +137,10 @@ function renderScript(script) {
 
   li.appendChild(actions);
 
+  if (script.lastError) {
+    li.appendChild(renderError(script));
+  }
+
   const meta = document.createElement("div");
   meta.className = "script-meta";
   meta.appendChild(chip(script.runAt));
@@ -117,14 +167,19 @@ async function refresh() {
   }
 
   el("empty").hidden = scripts.length > 0;
-  setStatus(`${scripts.length} 件`);
+
+  const failing = scripts.filter(s => s.errorCount > 0).length;
+  setStatus(
+    failing ? `${scripts.length} 件（エラー ${failing} 件）` : `${scripts.length} 件`
+  );
 }
 
 
 // ---- エディタ ----
 //
 // DevTools 同梱の CodeMirror 5 を既定テーマで使う（Tampermonkey と同じ構成）。
-// 読み込めなかった場合は素の textarea として動作する。
+// バンドルに含まれるアドオン（検索・折りたたみ・現在行・一致語強調など）を
+// 有効にしている。読み込めなかった場合は素の textarea として動作する。
 
 let editingId = null;
 
@@ -137,11 +192,15 @@ let isDirty = false;
 /** CodeMirror インスタンス。読み込みに失敗した場合は null。 */
 let cm = null;
 
+/** 構文チェックで付けた行ハイライトの解除用 */
+let lintMark = null;
+
 function initEditorWidget() {
   if (typeof CodeMirror === "undefined") {
     console.warn(
       "[Roxy] CodeMirror を読み込めませんでした。textarea で代替します。"
     );
+    el("ed-engine").textContent = "簡易エディタ（CodeMirror 未読込）";
     return;
   }
 
@@ -154,6 +213,12 @@ function initEditorWidget() {
     lineWrapping: false,
     matchBrackets: true,
     autoCloseBrackets: true,
+    styleActiveLine: true,
+    showTrailingSpace: true,
+    // 選択した語と同じ語を薄く強調する
+    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true },
+    foldGutter: true,
+    gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
     indentUnit: 2,
     tabSize: 2,
     indentWithTabs: false,
@@ -164,9 +229,30 @@ function initEditorWidget() {
       "Shift-Tab": editor => editor.execCommand("indentLess"),
       "Ctrl-/": editor => editor.execCommand("toggleComment"),
       "Cmd-/": editor => editor.execCommand("toggleComment"),
+      "Ctrl-J": () => jumpToLine(),
+      "Shift-Alt-F": () => reindentAll(),
+      "Alt-Up": editor => editor.execCommand("swapLineUp"),
+      "Alt-Down": editor => editor.execCommand("swapLineDown"),
+      "Ctrl-D": editor => editor.execCommand("deleteLine"),
     },
   });
-  cm.on("change", markDirty);
+
+  cm.on("change", () => {
+    markDirty();
+    clearLintMark();
+  });
+  cm.on("cursorActivity", updateStatusBar);
+  updateStatusBar();
+}
+
+/** ステータスバーの行桁表示を更新する */
+function updateStatusBar() {
+  if (!cm) {
+    return;
+  }
+  const pos = cm.getCursor();
+  el("ed-pos").textContent = `${pos.line + 1}:${pos.ch + 1}`;
+  el("ed-lines").textContent = `${cm.lineCount()} 行`;
 }
 
 function getEditorValue() {
@@ -174,12 +260,15 @@ function getEditorValue() {
 }
 
 function setEditorValue(text) {
+  clearLintMark();
   if (cm) {
     cm.setValue(text);
+    cm.clearHistory();
     // hidden 解除の直後は寸法が確定しないため、描画後に測り直させる
     requestAnimationFrame(() => {
       cm.refresh();
       cm.focus();
+      updateStatusBar();
     });
   } else {
     el("editor").value = text;
@@ -204,6 +293,126 @@ function setEditorStatus(text, isError = false) {
 function showPanel(name) {
   el("panel-userscripts").hidden = name !== "userscripts";
   el("panel-editor").hidden = name !== "editor";
+}
+
+// ---- ツールバーの操作 ----
+
+function runCommand(name) {
+  if (cm) {
+    cm.focus();
+    cm.execCommand(name);
+  }
+}
+
+/**
+ * 指定行へ移動する。
+ * CodeMirror の jump-to-line アドオンはバンドルに含まれないため自前で実装する。
+ */
+function jumpToLine() {
+  if (!cm) {
+    return;
+  }
+  const input = { value: String(cm.getCursor().line + 1) };
+  const ok = Services.prompt.prompt(
+    window,
+    "Roxy",
+    `行番号を入力してください (1〜${cm.lineCount()})`,
+    input,
+    null,
+    {}
+  );
+  if (!ok) {
+    return;
+  }
+  const line = parseInt(input.value, 10);
+  if (!Number.isFinite(line) || line < 1) {
+    return;
+  }
+  const target = Math.min(line, cm.lineCount()) - 1;
+  cm.setCursor({ line: target, ch: 0 });
+  // 画面の中央付近に来るようにする
+  cm.scrollIntoView({ line: target, ch: 0 }, 200);
+  cm.focus();
+}
+
+/** 全体を自動インデントし直す */
+function reindentAll() {
+  if (!cm) {
+    return;
+  }
+  const cursor = cm.getCursor();
+  cm.operation(() => {
+    for (let i = 0; i < cm.lineCount(); i++) {
+      cm.indentLine(i, "smart");
+    }
+  });
+  cm.setCursor(cursor);
+  cm.focus();
+  setEditorStatus("整形しました");
+}
+
+function foldAll(fold) {
+  if (!cm) {
+    return;
+  }
+  cm.operation(() => {
+    for (let i = 0; i < cm.lineCount(); i++) {
+      cm.foldCode({ line: i, ch: 0 }, null, fold ? "fold" : "unfold");
+    }
+  });
+}
+
+function toggleWrap() {
+  if (!cm) {
+    return;
+  }
+  const next = !cm.getOption("lineWrapping");
+  cm.setOption("lineWrapping", next);
+  el("ed-wrap").classList.toggle("is-active", next);
+}
+
+function clearLintMark() {
+  if (lintMark) {
+    lintMark.clear?.();
+    lintMark = null;
+  }
+  if (cm) {
+    for (let i = 0; i < cm.lineCount(); i++) {
+      cm.removeLineClass(i, "background", "cm-error-line");
+    }
+  }
+}
+
+/**
+ * 構文チェック。
+ *
+ * 検査そのものは ScriptEngine 側で行う。about:roxy の CSP では
+ * new Function が遮断されるため、UI 側では解析できない。
+ * モジュール側はコードを実行せず構文解析だけを行う。
+ */
+function lintScript() {
+  if (!cm) {
+    return;
+  }
+  clearLintMark();
+
+  const res = ScriptEngine.checkSyntax(getEditorValue());
+  if (res.ok) {
+    setEditorStatus("構文エラーはありません");
+    cm.focus();
+    return;
+  }
+
+  if (res.line && res.line <= cm.lineCount()) {
+    const target = res.line - 1;
+    cm.addLineClass(target, "background", "cm-error-line");
+    cm.setCursor({ line: target, ch: 0 });
+    cm.scrollIntoView({ line: target, ch: 0 }, 200);
+    setEditorStatus(`構文エラー ${res.line} 行目: ${res.message}`, true);
+  } else {
+    setEditorStatus(`構文エラー: ${res.message}`, true);
+  }
+  cm.focus();
 }
 
 /** CodeMirror が無いときだけ Tab / Ctrl+S を自前で処理する */
@@ -308,6 +517,21 @@ function init() {
   el("editor").addEventListener("keydown", handleEditorKeydown);
   el("editor").addEventListener("input", markDirty);
 
+  // ツールバー。CodeMirror 標準コマンドはそのまま呼び、
+  // 無いものだけ自前実装に繋ぐ。
+  el("ed-undo").addEventListener("click", () => runCommand("undo"));
+  el("ed-redo").addEventListener("click", () => runCommand("redo"));
+  el("ed-find").addEventListener("click", () => runCommand("find"));
+  el("ed-find-next").addEventListener("click", () => runCommand("findNext"));
+  el("ed-find-prev").addEventListener("click", () => runCommand("findPrev"));
+  el("ed-replace").addEventListener("click", () => runCommand("replace"));
+  el("ed-jump").addEventListener("click", jumpToLine);
+  el("ed-reindent").addEventListener("click", reindentAll);
+  el("ed-fold-all").addEventListener("click", () => foldAll(true));
+  el("ed-unfold-all").addEventListener("click", () => foldAll(false));
+  el("ed-lint").addEventListener("click", lintScript);
+  el("ed-wrap").addEventListener("click", toggleWrap);
+
   el("editor-back").addEventListener("click", () => {
     if (!confirmLeaveEditor()) {
       return;
@@ -325,20 +549,10 @@ function init() {
     file.launch();
   });
 
-  // CodeMirror が有効かどうかを一覧側に出す。
-  // 期待した見た目にならないとき、原因の切り分けに使う。
-  refresh()
-    .then(() => {
-      if (!cm) {
-        setStatus(
-          `${el("script-list").children.length} 件 ／ 簡易エディタ（CodeMirror 未読込）`
-        );
-      }
-    })
-    .catch(e => {
-      console.error("[Roxy] about:roxy の初期化に失敗しました:", e);
-      setStatus("読み込みに失敗しました");
-    });
+  refresh().catch(e => {
+    console.error("[Roxy] about:roxy の初期化に失敗しました:", e);
+    setStatus("読み込みに失敗しました");
+  });
 }
 
 document.addEventListener("DOMContentLoaded", init, { once: true });

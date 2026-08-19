@@ -75,10 +75,11 @@ export class RoxyScriptParent extends JSWindowActorParent {
       }
 
       case "Roxy:Log": {
-        // content 側の例外を親のコンソールに集約する。
-        // ページのコンソールだと気づかないため。
-        const { scriptName, detail } = message.data;
+        // content 側の例外を親のコンソールに集約しつつ、
+        // about:roxy から見えるよう ScriptEngine にも控える。
+        const { scriptId, scriptName, detail, url } = message.data;
         console.error(`[Roxy UserScript] ${scriptName}: ${detail}`);
+        ScriptEngine.recordError(scriptId, detail, url);
         return null;
       }
     }

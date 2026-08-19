@@ -1,0 +1,30 @@
+diff --git a/browser/components/preferences/preferences.xhtml b/browser/components/preferences/preferences.xhtml
+index 1b8c381593..288da20232 100644
+--- a/browser/components/preferences/preferences.xhtml
++++ b/browser/components/preferences/preferences.xhtml
+@@ -79,6 +79,7 @@
+ 
+   <script src="chrome://browser/content/utilityOverlay.js"/>
+   <script src="chrome://global/content/preferencesBindings.js"/>
++  <link rel="stylesheet" href="chrome://roxy/content/preferences.css"/>
+   <script src="chrome://browser/content/preferences/preferences.js"/>
+   <script src="chrome://browser/content/preferences/extensionControlled.js"/>
+   <script src="chrome://browser/content/preferences/findInPage.js"/>
+@@ -160,6 +161,9 @@
+         data-l10n-id="pane-tabs-browsing-title2">
+       </html:moz-page-nav-button>
+       <html:hr class="nav-separator" id="nav-separator" role="presentation" />
++      <html:moz-page-nav-button id="category-roxy"
++        view="paneRoxy"
++        iconsrc="chrome://global/skin/icons/highlights.svg">Roxy</html:moz-page-nav-button>
+       <html:moz-page-nav-button id="category-accessibility"
+         view="paneAccessibility"
+         iconsrc="chrome://browser/skin/preferences/category-accessibility.svg"
+@@ -248,6 +252,7 @@
+ #include privacy.inc.xhtml
+ #include sync.inc.xhtml
+ #include moreFromMozilla.inc.xhtml
++#include roxy.inc.xhtml
+         </vbox>
+       </vbox>
+     </vbox>

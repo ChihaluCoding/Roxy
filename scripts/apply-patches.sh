@@ -52,6 +52,11 @@ deploy src/roxy      browser/components/roxy
 deploy src/rules       browser/components/roxy/rules
 deploy src/extensions/roxy-adblock browser/extensions/roxy-adblock
 
+# about:preferences の Roxy ペイン。
+# preferences.xhtml が #include するため、上流のディレクトリへ直接置く。
+# 新規ファイルなので上流と衝突しない。
+deploy src/roxy/preferences browser/components/preferences
+
 # --- エンタープライズポリシー ---
 # policies.json は install 直下の distribution/ に置かれ、pref より強い強制力を持つ。
 # 配置先の moz.build への登録は patches/0012 側で行う。

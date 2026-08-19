@@ -6,6 +6,10 @@
         "install_url": "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi",
         "updates_disabled": false
       }
+    },
+    "UserMessaging": {
+      "FirefoxLabs": false,
+      "MoreFromMozilla": false
     }
   }
 }
