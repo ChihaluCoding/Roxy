@@ -14,6 +14,7 @@
  * クロスオリジン通信は必ずこちら側で行う。
  */
 
+import { MetadataParser } from "resource:///modules/roxy/MetadataParser.sys.mjs";
 import { ScriptStore } from "resource:///modules/roxy/ScriptStore.sys.mjs";
 import { ValueStore } from "resource:///modules/roxy/ValueStore.sys.mjs";
 import { UrlMatcher } from "resource:///modules/roxy/UrlMatcher.sys.mjs";
@@ -164,6 +165,58 @@ export const ScriptEngine = {
   async setEnabled(scriptId, enabled) {
     await ScriptStore.setEnabled(scriptId, enabled);
     await this.reload();
+  },
+
+  /**
+   * 編集用に本文を読む。
+   */
+  async getCode(scriptId) {
+    return ScriptStore.readCode(scriptId);
+  },
+
+  /**
+   * 保存して即座に反映する。
+   *
+   * @returns {Promise<object>} { ok, error } 解析に失敗した場合は保存しない
+   */
+  async saveScript(scriptId, code) {
+    // ==UserScript== が無いと読み込み時に無視される。
+    // 保存してから「動かない」と悩まないよう、ここで弾く。
+    if (!MetadataParser.parse(code)) {
+      return {
+        ok: false,
+        error: "==UserScript== ブロックが見つかりません。保存しませんでした。",
+      };
+    }
+    await ScriptStore.writeCode(scriptId, code);
+    await this.reload();
+    return { ok: true };
+  },
+
+  /**
+   * 新規スクリプトのひな形。ファイルは作らない。
+   */
+  get newScriptTemplate() {
+    return ScriptStore.newScriptTemplate;
+  },
+
+  /**
+   * 本文を指定して新規作成する。保存時に初めてファイルができる。
+   * ファイル名は @name から作る（無ければ new-script）。
+   *
+   * @returns {Promise<object>} { ok, id, error }
+   */
+  async createScript(code) {
+    const meta = MetadataParser.parse(code);
+    if (!meta) {
+      return {
+        ok: false,
+        error: "==UserScript== ブロックが見つかりません。保存しませんでした。",
+      };
+    }
+    const id = await ScriptStore.create(meta.name || "new-script", code);
+    await this.reload();
+    return { ok: true, id };
   },
 
   async removeScript(scriptId) {

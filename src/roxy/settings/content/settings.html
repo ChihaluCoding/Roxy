@@ -2,7 +2,7 @@
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -10,8 +10,23 @@
       content="default-src chrome:; object-src 'none'"
     />
     <title>Roxy Settings</title>
+    <!-- DevTools 同梱の CodeMirror 5 を再利用する（Tampermonkey と同じ構成）。
+       - テーマは default。lib/codemirror.css にトークン色が入っているため、
+       - mozilla.css（色を持たず DevTools のテーマ変数に依存）は使わない。 -->
+    <link
+      rel="stylesheet"
+      href="chrome://devtools/content/shared/sourceeditor/codemirror/lib/codemirror.css"
+    />
+    <link
+      rel="stylesheet"
+      href="chrome://devtools/content/shared/sourceeditor/codemirror/addon/dialog/dialog.css"
+    />
     <link rel="stylesheet" href="chrome://roxy/content/settings.css" />
-    <script src="chrome://roxy/content/settings.js"></script>
+    <script
+      defer
+      src="chrome://devtools/content/shared/sourceeditor/codemirror/codemirror.bundle.js"
+    ></script>
+    <script defer src="chrome://roxy/content/settings.js"></script>
   </head>
   <body>
     <header>
@@ -26,6 +41,7 @@
     <main>
       <section id="panel-userscripts">
         <div class="toolbar">
+          <button id="new-script" class="primary">新規作成</button>
           <button id="reload">再読み込み</button>
           <button id="open-folder">フォルダを開く</button>
           <span id="status" class="status"></span>
@@ -41,7 +57,30 @@
           上のフォルダに <code>*.user.js</code> を置いてください。
         </div>
 
-        <ul id="script-list" class="script-list"></ul>
+        <ul id="script-list" class="script-list" aria-busy="true"></ul>
+      </section>
+
+      <!-- 編集画面。スクリプト選択時に一覧と入れ替えて表示する -->
+      <section id="panel-editor" hidden>
+        <div class="toolbar">
+          <button id="editor-back">← 一覧へ戻る</button>
+          <button id="editor-save" class="primary">保存 (Ctrl+S)</button>
+          <span id="editor-name" class="editor-name"></span>
+          <span id="editor-status" class="status"></span>
+        </div>
+        <p class="hint">
+          Ctrl+S で保存 / Ctrl+F で検索 / Ctrl+/ で行コメント / Tab でインデント
+        </p>
+
+        <!-- CodeMirror が読み込めなかった場合はこの textarea がそのまま
+           - 簡易エディタとして機能する。 -->
+        <textarea
+          id="editor"
+          class="editor-input"
+          spellcheck="false"
+          autocomplete="off"
+          aria-label="ユーザースクリプトのコード"
+        ></textarea>
       </section>
     </main>
   </body>

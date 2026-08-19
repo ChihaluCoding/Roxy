@@ -90,6 +90,19 @@ GM_xmlhttpRequest({
 });
 `;
 
+const NEW_SCRIPT_TEMPLATE = name => `// ==UserScript==
+// @name        ${name}
+// @namespace   roxy
+// @version     1.0
+// @description 
+// @match       https://example.com/*
+// @run-at      document-idle
+// @grant       none
+// ==/UserScript==
+
+console.log("hello from ${name}");
+`;
+
 export const ScriptStore = {
   _dir: null,
 
@@ -132,15 +145,80 @@ export const ScriptStore = {
   },
 
   /**
-   * スクリプトファイルを削除する。状態の記録も消す。
+   * スクリプトIDからファイルパスを得る。
+   * userscripts ディレクトリの外を指すIDは受け付けない。
    */
-  async remove(scriptId) {
+  pathFor(scriptId) {
+    if (!scriptId.endsWith(".user.js") || /[\/]/.test(scriptId)) {
+      throw new Error(`不正なスクリプトIDです: ${scriptId}`);
+    }
     const path = PathUtils.join(this.dir, scriptId);
-    // ディレクトリ外を消させない
     if (PathUtils.parent(path) !== this.dir) {
       throw new Error(`不正なスクリプトIDです: ${scriptId}`);
     }
-    await IOUtils.remove(path, { ignoreAbsent: true });
+    return path;
+  },
+
+  /**
+   * 編集用に本文をディスクから読む。
+   * メモリ上のキャッシュではなく実ファイルを見る（外部エディタでの
+   * 変更を取りこぼさないため）。
+   */
+  async readCode(scriptId) {
+    return IOUtils.readUTF8(this.pathFor(scriptId));
+  },
+
+  async writeCode(scriptId, code) {
+    const path = this.pathFor(scriptId);
+    await IOUtils.makeDirectory(this.dir, { createAncestors: true });
+    await IOUtils.writeUTF8(path, code, { tmpPath: `${path}.tmp` });
+  },
+
+  /**
+   * 新規スクリプトのひな形を返す。ファイルは作らない。
+   * 実体を作るのは保存時（create）だけにして、
+   * 「保存していないのに残っている」状態を作らない。
+   */
+  get newScriptTemplate() {
+    return NEW_SCRIPT_TEMPLATE("new-script");
+  },
+
+  /**
+   * 空いているスクリプトIDを決める。衝突したら連番を付ける。
+   */
+  async pickId(baseName) {
+    const safe =
+      String(baseName || "")
+        .replace(/[^\w-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60) || "new-script";
+
+    let id = `${safe}.user.js`;
+    let n = 2;
+    while (await IOUtils.exists(PathUtils.join(this.dir, id))) {
+      id = `${safe}-${n++}.user.js`;
+    }
+    return id;
+  },
+
+  /**
+   * 本文を指定して新規作成する。
+   *
+   * @returns {Promise<string>} 作成したスクリプトID
+   */
+  async create(baseName, code) {
+    await this.ensureDir();
+    const id = await this.pickId(baseName);
+    await this.writeCode(id, code);
+    return id;
+  },
+
+  /**
+   * スクリプトファイルを削除する。状態の記録も消す。
+   */
+  async remove(scriptId) {
+    await IOUtils.remove(this.pathFor(scriptId), { ignoreAbsent: true });
 
     const state = await this.loadState();
     delete state[scriptId];

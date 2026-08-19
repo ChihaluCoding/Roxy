@@ -25,7 +25,11 @@
   }
 }
 
+/* chrome 特権ドキュメントは既定で user-select: none（ブラウザ UI の文字を
+   選択させないための仕様）。この画面はコードを扱うので明示的に許可する。
+   これが無いと範囲選択もコピーもできない。 */
 body {
+  user-select: text;
   margin: 0;
   background: var(--roxy-bg);
   color: var(--roxy-text);
@@ -177,4 +181,79 @@ code {
   display: flex;
   align-items: start;
   gap: 6px;
+}
+
+/* ---- 編集画面 ---- */
+
+button.primary {
+  background: var(--roxy-accent);
+  border-color: var(--roxy-accent);
+  color: #fff;
+}
+
+button.primary:hover {
+  filter: brightness(1.1);
+}
+
+.editor-name {
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.status.is-error {
+  color: #c50042;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status.is-error {
+    color: #ff9aa2;
+  }
+}
+
+/* CodeMirror が読み込めなかったときのフォールバック */
+.editor-input {
+  width: 100%;
+  height: 62vh;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--roxy-border);
+  border-radius: 8px;
+  background: var(--roxy-surface);
+  color: var(--roxy-text);
+  font: 13px/1.7 ui-monospace, Consolas, monospace;
+  white-space: pre;
+  tab-size: 2;
+  resize: vertical;
+  user-select: text;
+}
+
+/* ---- CodeMirror ----
+   配色は lib/codemirror.css の既定テーマ（cm-s-default）に任せる。
+   ここでは枠・高さ・フォントと、chrome 特権ページで必要な
+   user-select の解除だけを行う。 */
+
+.CodeMirror {
+  height: 62vh;
+  border: 1px solid var(--roxy-border);
+  border-radius: 8px;
+  font: 13px/1.7 ui-monospace, Consolas, monospace;
+  /* chrome 特権ドキュメントは既定で user-select: none。
+     これを解除しないと範囲選択もコピーもできない。 */
+  user-select: text;
+}
+
+.CodeMirror * {
+  user-select: text;
+}
+
+/* 行番号はコピーに混ざると貼り付け先で崩れるため除外する */
+.CodeMirror-linenumber,
+.CodeMirror-gutter,
+.CodeMirror-gutters {
+  user-select: none;
+}
+
+.CodeMirror-focused {
+  outline: 2px solid var(--roxy-accent);
+  outline-offset: -1px;
 }
