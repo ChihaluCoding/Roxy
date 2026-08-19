@@ -1,11 +1,15 @@
 {
   "name": "Roxy",
   "vendor": "Roxy Project",
-  "appId": "roxy@example.org",
+  "appId": "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}",
   "upstream": {
     "remote": "https://github.com/mozilla-firefox/firefox.git",
     "channel": "release",
     "tag": "auto"
   },
-  "targets": ["win64", "macos-aarch64"]
+  "targets": [
+    "win64",
+    "macos-aarch64"
+  ],
+  "appIdNote": "Firefox と同一の AppID。AMO の拡張機能を互換性チェック無しでインストールするために意図的に維持している。変更すると uBlock Origin の強制インストールが壊れる。"
 }

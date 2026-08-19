@@ -7,20 +7,6 @@
 bootstrap.log
 build.log
 build-j8.log
-README.md
+
+# アイコン原画（生成物・サイズが大きい）
 assets/
-docs/
-scripts/
-scripts/apply-patches.sh
-scripts/bootstrap.sh
-scripts/build.sh
-scripts/common.sh
-scripts/export-patch.sh
-scripts/gen-icons.py
-scripts/mozshell.sh
-scripts/package.sh
-scripts/run.sh
-docs/adding-a-feature.md
-docs/architecture.md
-docs/features.md
-docs/roadmap.md
