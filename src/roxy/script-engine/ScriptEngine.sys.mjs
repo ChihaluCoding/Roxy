@@ -14,6 +14,7 @@
  * クロスオリジン通信は必ずこちら側で行う。
  */
 
+import { InstallHandler } from "resource:///modules/roxy/InstallHandler.sys.mjs";
 import { MetadataParser } from "resource:///modules/roxy/MetadataParser.sys.mjs";
 import { ResourceStore } from "resource:///modules/roxy/ResourceStore.sys.mjs";
 import { ScriptStore } from "resource:///modules/roxy/ScriptStore.sys.mjs";
@@ -59,6 +60,9 @@ export const ScriptEngine = {
 
     // 自動更新。起動直後は走らせず、少し置いてから確認する。
     UpdateService.init(this);
+
+    // *.user.js への遷移を確認画面へ差し替える
+    InstallHandler.init();
 
     console.log("[Roxy] Script Engine を起動しました");
   },
@@ -284,6 +288,84 @@ ${code}
         line: Number.isFinite(line) && line >= 1 ? line : null,
       };
     }
+  },
+
+  // ---- 配布サイトからのインストール ----
+
+  /**
+   * インストール候補を取得して、確認画面に出す情報を作る。
+   * この時点では保存しない。
+   *
+   * @returns {Promise<object>} { ok, code, meta, existing, error }
+   */
+  async prepareInstall(url) {
+    const res = await InstallHandler.fetchSource(url);
+    if (!res.ok) {
+      return { ok: false, error: res.error };
+    }
+
+    const meta = MetadataParser.parse(res.text);
+    if (!meta) {
+      return {
+        ok: false,
+        error: "==UserScript== ブロックが見つかりません。ユーザースクリプトではないようです。",
+      };
+    }
+
+    // 同名のものが既にあれば、上書き更新として扱えるようにする
+    await this._loadPromise;
+    const existing = this._scripts.find(
+      s => s.meta.name === meta.name && s.meta.namespace === meta.namespace
+    );
+
+    return {
+      ok: true,
+      url,
+      code: res.text,
+      meta: {
+        name: meta.name,
+        namespace: meta.namespace,
+        version: meta.version,
+        description: meta.description,
+        match: meta.match,
+        include: meta.include,
+        grant: meta.grant,
+        require: meta.require,
+        connect: meta.connect,
+        runAt: meta.runAt,
+      },
+      existing: existing
+        ? { id: existing.id, version: existing.meta.version }
+        : null,
+    };
+  },
+
+  /**
+   * 確認画面で承諾されたものを保存する。
+   *
+   * @returns {Promise<object>} { ok, id, error }
+   */
+  async install(url, code, replaceId) {
+    const meta = MetadataParser.parse(code);
+    if (!meta) {
+      return { ok: false, error: "==UserScript== ブロックが見つかりません。" };
+    }
+
+    // 配布元を控えておく。@downloadURL が無いスクリプトでも
+    // 次回以降の更新確認に使えるようにする。
+    let body = code;
+    if (!meta.downloadURL) {
+      body = code.replace(
+        /(\/\/\s*==\/UserScript==)/,
+        `// @downloadURL ${url}
+$1`
+      );
+    }
+
+    const id = replaceId ?? (await ScriptStore.pickId(meta.name || "userscript"));
+    await ScriptStore.writeCode(id, body);
+    await this.reload();
+    return { ok: true, id };
   },
 
   /**

@@ -7,6 +7,7 @@
 
 EXTRA_JS_MODULES.roxy += [
     "GMApi.sys.mjs",
+    "InstallHandler.sys.mjs",
     "MetadataParser.sys.mjs",
     "ResourceStore.sys.mjs",
     "RoxyScriptChild.sys.mjs",

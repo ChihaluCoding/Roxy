@@ -293,6 +293,140 @@ function setEditorStatus(text, isError = false) {
 function showPanel(name) {
   el("panel-userscripts").hidden = name !== "userscripts";
   el("panel-editor").hidden = name !== "editor";
+  el("panel-install").hidden = name !== "install";
+}
+
+// ---- 配布サイトからのインストール ----
+
+let pendingInstall = null;
+
+/**
+ * 確認画面を出す。ここでは保存しない。
+ */
+async function showInstall(url) {
+  showPanel("install");
+  el("install-status").textContent = "取得しています…";
+  el("install-code").textContent = "";
+  el("install-meta").textContent = "";
+  el("install-warn").hidden = true;
+  el("install-accept").disabled = true;
+
+  let info;
+  try {
+    info = await ScriptEngine.prepareInstall(url);
+  } catch (e) {
+    console.error("[Roxy] インストールの準備に失敗しました:", e);
+    el("install-status").textContent = "取得に失敗しました";
+    return;
+  }
+
+  if (!info.ok) {
+    el("install-status").textContent = info.error;
+    el("install-status").classList.add("is-error");
+    el("install-name").textContent = "インストールできません";
+    el("install-source").textContent = url;
+    return;
+  }
+
+  pendingInstall = info;
+  el("install-status").textContent = "";
+  el("install-status").classList.remove("is-error");
+  el("install-accept").disabled = false;
+
+  el("install-name").textContent = info.meta.version
+    ? `${info.meta.name} v${info.meta.version}`
+    : info.meta.name;
+  el("install-desc").textContent = info.meta.description || "";
+  el("install-source").textContent = info.url;
+
+  const meta = el("install-meta");
+  meta.textContent = "";
+  meta.appendChild(chip(info.meta.runAt));
+  for (const p of [...info.meta.match, ...info.meta.include]) {
+    meta.appendChild(chip(p));
+  }
+  for (const g of info.meta.grant) {
+    meta.appendChild(chip(`@grant ${g}`));
+  }
+  for (const r of info.meta.require) {
+    meta.appendChild(chip(`@require ${r}`));
+  }
+  for (const c of info.meta.connect) {
+    meta.appendChild(chip(`@connect ${c}`));
+  }
+
+  // 注意を促す点をまとめて出す。権限の要求は見落としやすい。
+  const warnings = [];
+  if (info.existing) {
+    warnings.push(
+      `同名のスクリプトが既にあります（v${info.existing.version}）。上書きされます。`
+    );
+  }
+  if (info.meta.grant.includes("GM_xmlhttpRequest")) {
+    warnings.push(
+      "GM_xmlhttpRequest を要求しています。外部サイトへ通信します。"
+    );
+  }
+  if (info.meta.require.length) {
+    warnings.push(
+      `外部ライブラリを ${info.meta.require.length} 件読み込みます。`
+    );
+  }
+  if (warnings.length) {
+    const box = el("install-warn");
+    box.textContent = "";
+    for (const w of warnings) {
+      const line = document.createElement("div");
+      line.textContent = w;
+      box.appendChild(line);
+    }
+    box.hidden = false;
+  }
+
+  // コードは信用できない入力なので必ず textContent で入れる
+  el("install-code").textContent = info.code;
+}
+
+async function acceptInstall() {
+  if (!pendingInstall) {
+    return;
+  }
+  el("install-accept").disabled = true;
+  el("install-status").textContent = "インストールしています…";
+  try {
+    const res = await ScriptEngine.install(
+      pendingInstall.url,
+      pendingInstall.code,
+      pendingInstall.existing?.id ?? null
+    );
+    if (!res.ok) {
+      el("install-status").textContent = res.error;
+      el("install-status").classList.add("is-error");
+      el("install-accept").disabled = false;
+      return;
+    }
+    pendingInstall = null;
+    // 一覧へ戻して結果を見せる
+    window.location.hash = "";
+    showPanel("userscripts");
+    await refresh();
+  } catch (e) {
+    console.error("[Roxy] インストールに失敗しました:", e);
+    el("install-status").textContent = "インストールに失敗しました";
+    el("install-accept").disabled = false;
+  }
+}
+
+/**
+ * about:roxy#install=<URL> で開かれたときにインストール画面を出す。
+ */
+function handleHash() {
+  const m = /^#install=(.+)$/.exec(window.location.hash);
+  if (!m) {
+    return false;
+  }
+  showInstall(decodeURIComponent(m[1]));
+  return true;
 }
 
 // ---- ツールバーの操作 ----
@@ -549,6 +683,14 @@ function init() {
     await refresh();
   });
 
+  el("install-cancel").addEventListener("click", () => {
+    pendingInstall = null;
+    window.location.hash = "";
+    showPanel("userscripts");
+  });
+  el("install-accept").addEventListener("click", acceptInstall);
+  window.addEventListener("hashchange", handleHash);
+
   el("check-updates").addEventListener("click", async () => {
     const button = el("check-updates");
     button.disabled = true;
@@ -579,10 +721,12 @@ function init() {
     file.launch();
   });
 
-  refresh().catch(e => {
-    console.error("[Roxy] about:roxy の初期化に失敗しました:", e);
-    setStatus("読み込みに失敗しました");
-  });
+  refresh()
+    .then(() => handleHash())
+    .catch(e => {
+      console.error("[Roxy] about:roxy の初期化に失敗しました:", e);
+      setStatus("読み込みに失敗しました");
+    });
 }
 
 document.addEventListener("DOMContentLoaded", init, { once: true });

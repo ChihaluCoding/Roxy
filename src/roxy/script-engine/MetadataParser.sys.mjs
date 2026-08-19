@@ -22,7 +22,10 @@ const BLOCK_RE =
   /\/\/\s*==UserScript==\s*\n([\s\S]*?)\n\s*\/\/\s*==\/UserScript==/;
 
 // 1 行分。"// @key value" の形。value は省略可（@noframes など）。
-const LINE_RE = /^\s*\/\/\s*@([\w-]+)\s*(.*)$/;
+// @name:ja のようにロケール付きのキーがあるため、":" 以降を分けて取る。
+// 分けずに書くと "@name:vi ..." を「キー name、値 ':vi ...'」と誤読し、
+// 最後に現れた言語で名前が上書きされてしまう。
+const LINE_RE = /^\s*\/\/\s*@([\w-]+)(?::([\w-]+))?(?:\s+(.*))?$/;
 
 // 複数回書けるキー。単一値のキーと区別する。
 const MULTI_KEYS = new Set([
@@ -41,6 +44,32 @@ const VALID_RUN_AT = new Set([
   "document-end",
   "document-idle",
 ]);
+
+/**
+ * @name:ja のようなロケール付きの値から、UI 言語に合うものを選ぶ。
+ * "ja-JP" に対して "ja" のような前方一致も見る。
+ */
+function applyLocale(meta) {
+  let tags = [];
+  try {
+    tags = Services.locale.appLocalesAsBCP47.map(t => t.toLowerCase());
+  } catch (e) {
+    tags = [];
+  }
+
+  for (const key of ["name", "description"]) {
+    const table = meta.localized[key];
+    if (!table) {
+      continue;
+    }
+    const found = tags.find(
+      tag => table[tag] ?? table[tag.split("-")[0]] ?? null
+    );
+    if (found) {
+      meta[key] = table[found] ?? table[found.split("-")[0]] ?? meta[key];
+    }
+  }
+}
 
 export const MetadataParser = {
   /**
@@ -72,6 +101,8 @@ export const MetadataParser = {
       noframes: false,
       // GM_info.scriptMetaStr 用に生のブロックを保持する
       metaStr: block[0],
+      // ロケール付きの値。{ name: { ja: "...", en: "..." } }
+      localized: {},
       extras: {},
     };
 
@@ -81,7 +112,14 @@ export const MetadataParser = {
         continue;
       }
       const key = m[1].toLowerCase();
-      const value = m[2].trim();
+      const locale = m[2] ? m[2].toLowerCase() : null;
+      const value = (m[3] ?? "").trim();
+
+      // ロケール付きは基本のキーを上書きせず、別に控える
+      if (locale) {
+        (meta.localized[key] ??= {})[locale] = value;
+        continue;
+      }
 
       switch (key) {
         case "name":
@@ -124,6 +162,10 @@ export const MetadataParser = {
           }
       }
     }
+
+    // 表示に使う名前と説明は、UI の言語に合わせて選ぶ。
+    // 一致するものが無ければ基本のキーをそのまま使う。
+    applyLocale(meta);
 
     // @name が無いスクリプトはファイル名で代用させるため空のまま返す。
     return meta;

@@ -25,6 +25,9 @@ pref("roxy.script.handler_name", "Violentmonkey");
 // @updateURL / @downloadURL を持つスクリプトを定期的に確認し、
 // 新しい版があれば置き換える。配布元を信頼して任意のコードを
 // 実行し続けることになる点に注意。
+// *.user.js を開いたときに、ダウンロードではなく確認画面を出す。
+pref("roxy.script.install_from_web", true);
+
 pref("roxy.script.update.enabled", true);
 pref("roxy.script.update.interval_hours", 24);
 

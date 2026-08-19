@@ -69,6 +69,29 @@
         <ul id="script-list" class="script-list" aria-busy="true"></ul>
       </section>
 
+      <!-- インストール確認。*.user.js を開いたときに出る -->
+      <section id="panel-install" hidden>
+        <div class="toolbar">
+          <button id="install-cancel">← キャンセル</button>
+          <button id="install-accept" class="primary">インストール</button>
+          <span id="install-status" class="status"></span>
+        </div>
+
+        <div class="install-summary">
+          <h2 id="install-name"></h2>
+          <p id="install-desc" class="script-desc"></p>
+          <div id="install-source" class="script-error-url"></div>
+          <div id="install-meta" class="script-meta"></div>
+          <div id="install-warn" class="install-warn" hidden></div>
+        </div>
+
+        <p class="hint">
+          インストールすると、下のコードが対象サイトで実行されます。
+          内容を確認してから決めてください。
+        </p>
+        <pre id="install-code" class="install-code"></pre>
+      </section>
+
       <!-- 編集画面。スクリプト選択時に一覧と入れ替えて表示する -->
       <section id="panel-editor" hidden>
         <div class="toolbar">

@@ -404,3 +404,49 @@ button.primary:hover {
     color: #ff9aa2;
   }
 }
+
+/* ---- インストール確認 ---- */
+
+.install-summary {
+  padding: 16px;
+  border: 1px solid var(--roxy-border);
+  border-radius: 8px;
+  background: var(--roxy-surface);
+  margin-bottom: 12px;
+}
+
+.install-summary h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.install-warn {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, #b26a00 45%, var(--roxy-border));
+  border-radius: 6px;
+  background: color-mix(in srgb, #b26a00 10%, transparent);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+@media (prefers-color-scheme: dark) {
+  .install-warn {
+    border-color: color-mix(in srgb, #f0b429 45%, var(--roxy-border));
+    background: color-mix(in srgb, #f0b429 12%, transparent);
+  }
+}
+
+.install-code {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--roxy-border);
+  border-radius: 8px;
+  background: var(--roxy-surface);
+  color: var(--roxy-text);
+  font: 12px/1.7 ui-monospace, Consolas, monospace;
+  white-space: pre;
+  overflow: auto;
+  max-height: 50vh;
+  user-select: text;
+}

@@ -17,6 +17,9 @@ import { GMApi } from "resource:///modules/roxy/GMApi.sys.mjs";
 
 const Cu = Components.utils;
 
+// マネージャの存在を知らせるサイト。無関係なページには何も足さない。
+const INSTALL_SITES = ["greasyfork.org", "sleazyfork.org", "openuserjs.org"];
+
 // DOM イベント名 → @run-at の値
 const EVENT_TO_RUN_AT = {
   DOMDocElementInserted: "document-start",
@@ -32,6 +35,9 @@ export class RoxyScriptChild extends JSWindowActorChild {
     const runAt = EVENT_TO_RUN_AT[event.type];
     if (!runAt) {
       return;
+    }
+    if (runAt === "document-start") {
+      this.#exposeInstallMarker();
     }
     // load は capture で拾うため img や iframe の読み込み完了も流れてくる。
     // 自分のドキュメント自身の load だけを document-idle とみなす。
@@ -77,6 +83,48 @@ export class RoxyScriptChild extends JSWindowActorChild {
       }
       this.#executed.add(script.id);
       this.#execute(script);
+    }
+  }
+
+  /**
+   * 配布サイトにマネージャの存在を知らせる。
+   *
+   * Greasy Fork などは window.external.Violentmonkey の有無で
+   * ユーザースクリプトマネージャを検出する。無いと検出処理が例外で落ち、
+   * 「インストール」ボタンが反応しなくなる。
+   *
+   * 名乗りは GM_info.scriptHandler と揃えている。
+   */
+  #exposeInstallMarker() {
+    const win = this.contentWindow;
+    if (!win) {
+      return;
+    }
+    const host = this.document?.location?.hostname ?? "";
+    if (!INSTALL_SITES.some(s => host === s || host.endsWith(`.${s}`))) {
+      return;
+    }
+
+    try {
+      const waived = Cu.waiveXrays(win);
+      const external = waived.external;
+      if (!external || external.Violentmonkey) {
+        return;
+      }
+      const marker = Cu.createObjectIn(external, {
+        defineAs: "Violentmonkey",
+      });
+      Cu.exportFunction(
+        () => {
+          // 詳細な導入状況は返さない。サイトに手元のスクリプト一覧を
+          // 教える必要はなく、存在を知らせれば十分。
+          return waived.Promise.resolve(false);
+        },
+        marker,
+        { defineAs: "isInstalled" }
+      );
+    } catch (e) {
+      // ページ側の細工で失敗しても、本来の処理は続ける
     }
   }
 
