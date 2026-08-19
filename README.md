@@ -29,7 +29,7 @@ Windows は **必ず MozillaBuild シェル**（`c:\mozilla-build\start-shell.ba
 ```bash
 ./scripts/bootstrap.sh        # ソース取得 + mach bootstrap（初回 30分〜）
 ./scripts/apply-patches.sh    # patches/ と src/ を engine/ に反映
-./scripts/build.sh            # ビルド（初回 1〜3時間、-j8）
+./scripts/build.sh            # ビルド（初回 約50分、-j10）
 ./scripts/run.sh              # 起動
 ./scripts/package.sh          # 配布物を engine/obj-*/dist/ に生成
 ```
@@ -69,3 +69,23 @@ Windows は **必ず MozillaBuild シェル**（`c:\mozilla-build\start-shell.ba
 
 同じスクリプトが動く（MozillaBuild 不要）。Xcode + Command Line Tools が必要。
 Windows からの macOS クロスビルドは実質不可能なので、macOS 実機か CI で `scripts/build.sh macos-aarch64` を回す。
+
+## ライセンスと帰属
+
+Roxy は [Mozilla Firefox](https://github.com/mozilla-firefox/firefox) の派生物であり、
+上流と同じ **Mozilla Public License 2.0** で提供する（[LICENSE](LICENSE)）。
+
+現在の上流バージョンは [.upstream-tag](.upstream-tag) に記録している（`FIREFOX_153_0_RELEASE`）。
+
+### 商標について
+
+**Roxy は Mozilla の公式製品ではなく、Mozilla とは一切関係がない。**
+Firefox および Mozilla は Mozilla Foundation の商標であり、Roxy はこれらを名乗らない。
+
+ビルドは上流の `unofficial` ブランディングを土台にしており、
+[src/branding/](src/branding/) で Roxy 用に差し替えている。
+
+なお AppID（`{ec8030f7-…}`）は Firefox と同一のまま維持している。
+AMO の拡張機能を互換性チェック無しで利用するためで、変更すると
+[src/policies/policies.json](src/policies/policies.json) による uBlock Origin の
+強制インストールが壊れる（`roxy.json` の `appIdNote` を参照）。
