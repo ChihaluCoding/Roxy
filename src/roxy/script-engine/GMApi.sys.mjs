@@ -23,6 +23,8 @@ const PROMISE_ALIASES = {
   deleteValue: "GM_deleteValue",
   listValues: "GM_listValues",
   addStyle: "GM_addStyle",
+  getResourceText: "GM_getResourceText",
+  getResourceUrl: "GM_getResourceURL",
   log: "GM_log",
   openInTab: "GM_openInTab",
   setClipboard: "GM_setClipboard",
@@ -85,6 +87,26 @@ export const GMApi = {
       // head が無い段階（document-start）でも入れられるようにする
       (doc.head || doc.documentElement).appendChild(style);
       return style;
+    };
+
+    // ---- @resource ----
+    const resources = script.resources ?? {};
+
+    api.GM_getResourceText = name => {
+      return resources[name]?.text ?? null;
+    };
+
+    api.GM_getResourceURL = name => {
+      const res = resources[name];
+      if (!res) {
+        return null;
+      }
+      // data: URL にして返す。元の URL をそのまま返すと、
+      // ページから見えてキャッシュも効かない。
+      const encoded = window.btoa(
+        String.fromCharCode(...new TextEncoder().encode(res.text))
+      );
+      return `data:${res.mime};base64,${encoded}`;
     };
 
     api.GM_log = (...args) => {

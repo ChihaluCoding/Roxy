@@ -18,6 +18,11 @@ const DIR_NAME = "userscripts";
 // 有効／無効の状態。スクリプト本体とは別に持つ（.user.js を書き換えないため）
 const STATE_FILENAME = "userscripts-state.json";
 
+// サンプルを生成済みかどうか。プロファイル内の pref に持つ。
+// 「ディレクトリが空か」で判定すると、利用者が全部消しても復活してしまう。
+// 設定画面には出さない内部状態なので、既定 pref には宣言しない。
+const PREF_SAMPLES_CREATED = "roxy.script.samples_created";
+
 const SAMPLE_FILENAME = "roxy-hello.user.js";
 const XHR_SAMPLE_FILENAME = "roxy-xhr-test.user.js";
 const SAMPLE_CODE = `// ==UserScript==
@@ -31,7 +36,12 @@ const SAMPLE_CODE = `// ==UserScript==
 // @grant       GM_addStyle
 // @grant       GM_setValue
 // @grant       GM_getValue
+// @require     https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
 // ==/UserScript==
+
+// @require で読み込んだライブラリが使えることの確認
+const stamp =
+  typeof dayjs === "function" ? dayjs().format("HH:mm:ss") : "(dayjs 未取得)";
 
 // 起動回数を数える（GM_setValue / GM_getValue の確認）
 const count = (GM_getValue("count", 0) || 0) + 1;
@@ -48,7 +58,7 @@ GM_addStyle(\`
 const banner = document.createElement("div");
 banner.id = "roxy-banner";
 banner.textContent =
-  \`Roxy Script Engine 動作確認 / 表示回数: \${count} / handler: \${GM_info.scriptHandler}\`;
+  \`Roxy Script Engine 動作確認 / 表示回数: \${count} / handler: \${GM_info.scriptHandler} / @require: \${stamp}\`;
 document.documentElement.appendChild(banner);
 
 console.log("[Roxy UserScript] GM_info =", GM_info);
@@ -115,6 +125,27 @@ export const ScriptStore = {
 
   get statePath() {
     return PathUtils.join(PathUtils.profileDir, "roxy", STATE_FILENAME);
+  },
+
+  /**
+   * サンプルを作り直す。ファイル名が衝突したら連番を付けるので、
+   * 既存のスクリプトを上書きしない。
+   *
+   * @returns {Promise<string[]>} 作成したスクリプトID
+   */
+  async createSamples() {
+    await IOUtils.makeDirectory(this.dir, { createAncestors: true });
+    const created = [];
+    for (const [base, code] of [
+      ["roxy-hello", SAMPLE_CODE],
+      ["roxy-xhr-test", XHR_SAMPLE_CODE],
+    ]) {
+      const id = await this.pickId(base);
+      await this.writeCode(id, code);
+      created.push(id);
+    }
+    Services.prefs.setBoolPref(PREF_SAMPLES_CREATED, true);
+    return created;
   },
 
   /**
@@ -233,6 +264,10 @@ export const ScriptStore = {
   async ensureDir() {
     await IOUtils.makeDirectory(this.dir, { createAncestors: true });
 
+    if (Services.prefs.getBoolPref(PREF_SAMPLES_CREATED, false)) {
+      return;
+    }
+
     const children = await IOUtils.getChildren(this.dir);
     if (!children.length) {
       await IOUtils.writeUTF8(
@@ -244,6 +279,9 @@ export const ScriptStore = {
         XHR_SAMPLE_CODE
       );
     }
+
+    // 既にファイルがあった場合も含めて、以後は生成しない
+    Services.prefs.setBoolPref(PREF_SAMPLES_CREATED, true);
   },
 
   /**

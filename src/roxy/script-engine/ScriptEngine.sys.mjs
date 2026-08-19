@@ -15,6 +15,7 @@
  */
 
 import { MetadataParser } from "resource:///modules/roxy/MetadataParser.sys.mjs";
+import { ResourceStore } from "resource:///modules/roxy/ResourceStore.sys.mjs";
 import { ScriptStore } from "resource:///modules/roxy/ScriptStore.sys.mjs";
 import { ValueStore } from "resource:///modules/roxy/ValueStore.sys.mjs";
 import { UrlMatcher } from "resource:///modules/roxy/UrlMatcher.sys.mjs";
@@ -124,6 +125,11 @@ export const ScriptEngine = {
       // GM_getValue は同期 API なので、実行前に値一式を渡しておく。
       const values = await ValueStore.load(script.id);
 
+      // @require / @resource は取得に時間が掛かるので、
+      // 一度取ったらキャッシュから返る。
+      const requires = await this._loadRequires(script);
+      const resources = await this._loadResources(script);
+
       result.push({
         id: script.id,
         name: script.name,
@@ -133,6 +139,8 @@ export const ScriptEngine = {
         meta: script.meta,
         metaStr: script.metaStr,
         values,
+        requires,
+        resources,
         handlerName: Services.prefs.getStringPref(
           "roxy.script.handler_name",
           "Violentmonkey"
@@ -141,6 +149,63 @@ export const ScriptEngine = {
       });
     }
     return result;
+  },
+
+  /**
+   * @require のライブラリを取得する。順序はスクリプトの記述順を保つ。
+   * 取得に失敗したものは実行時エラーとして記録し、読み込みは続ける。
+   */
+  async _loadRequires(script) {
+    const out = [];
+    for (const url of script.meta.require ?? []) {
+      const res = await ResourceStore.fetchCached(url);
+      if (res.ok) {
+        out.push({ url, code: res.text });
+      } else {
+        this.recordError(script.id, `@require の取得に失敗: ${url} (${res.error})`, "");
+      }
+    }
+    return out;
+  },
+
+  /**
+   * @resource を取得する。書式は "名前 URL"。
+   */
+  async _loadResources(script) {
+    const out = {};
+    for (const entry of script.meta.resource ?? []) {
+      const m = /^(\S+)\s+(\S+)$/.exec(entry.trim());
+      if (!m) {
+        this.recordError(script.id, `@resource の書式が不正です: ${entry}`, "");
+        continue;
+      }
+      const [, name, url] = m;
+      const res = await ResourceStore.fetchCached(url);
+      if (res.ok) {
+        out[name] = { url, text: res.text, mime: res.mime };
+      } else {
+        this.recordError(script.id, `@resource の取得に失敗: ${name} ${url} (${res.error})`, "");
+      }
+    }
+    return out;
+  },
+
+  /**
+   * サンプルスクリプトを作り直す。
+   * 初回生成は一度きりなので、消したあと戻したいときの入り口。
+   */
+  async restoreSamples() {
+    const created = await ScriptStore.createSamples();
+    await this.reload();
+    return created;
+  },
+
+  /**
+   * @require / @resource のキャッシュを消して読み直す。
+   */
+  async clearResourceCache() {
+    await ResourceStore.clear();
+    await this.reload();
   },
 
   // ---- 実行時エラーの記録 ----

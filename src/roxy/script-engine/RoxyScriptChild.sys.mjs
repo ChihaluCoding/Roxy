@@ -125,6 +125,23 @@ export class RoxyScriptChild extends JSWindowActorChild {
       return;
     }
 
+    // @require は本体より先に、同じサンドボックスで評価する。
+    // 1 つ失敗しても残りと本体は実行する。ライブラリの欠落でスクリプト
+    // 全体が止まるより、動く範囲を残した方が実用的。
+    for (const req of script.requires ?? []) {
+      try {
+        Cu.evalInSandbox(
+          req.code,
+          sandbox,
+          "latest",
+          `roxy-require:${req.url}`,
+          1
+        );
+      } catch (e) {
+        this.#reportError(script, `@require の実行に失敗 (${req.url}): ${e}`);
+      }
+    }
+
     try {
       Cu.evalInSandbox(
         script.code,
@@ -157,6 +174,17 @@ export class RoxyScriptChild extends JSWindowActorChild {
         sameZoneAs: win,
         sandboxName: `roxy-userscript-page:${script.id}`,
       });
+
+      for (const req of script.requires ?? []) {
+        Cu.evalInSandbox(
+          req.code,
+          sandbox,
+          "latest",
+          `roxy-require:${req.url}`,
+          1
+        );
+      }
+
       Cu.evalInSandbox(
         script.code,
         sandbox,

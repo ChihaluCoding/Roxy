@@ -543,6 +543,18 @@ function init() {
     refresh();
   });
 
+  el("clear-cache").addEventListener("click", async () => {
+    setStatus("キャッシュを消去しています…");
+    await ScriptEngine.clearResourceCache();
+    await refresh();
+  });
+
+  el("restore-samples").addEventListener("click", async () => {
+    setStatus("サンプルを作成しています…");
+    await ScriptEngine.restoreSamples();
+    await refresh();
+  });
+
   el("open-folder").addEventListener("click", () => {
     const file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
     file.initWithPath(ScriptEngine.scriptsDir);
