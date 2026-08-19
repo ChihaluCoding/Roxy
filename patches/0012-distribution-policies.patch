@@ -11,3 +11,13 @@ index b174449a09..f1da642d51 100644
 +FINAL_TARGET_FILES.distribution += [
 +    "policies.json",
 +]
+diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+index 203811a0fb..b526d29f01 100644
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -463,3 +463,5 @@ bin/libfreebl_64int_3.so
+ #if defined(BUILT_BY_MOZILLA)
+ @RESPATH@/distribution/*
+ #endif
++; Roxy: policies.json は公式ビルド以外でも同梱する
++@RESPATH@/distribution/policies.json
