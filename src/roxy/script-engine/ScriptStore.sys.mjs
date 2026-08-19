@@ -15,6 +15,9 @@ import { UrlMatcher } from "resource:///modules/roxy/UrlMatcher.sys.mjs";
 
 const DIR_NAME = "userscripts";
 
+// 有効／無効の状態。スクリプト本体とは別に持つ（.user.js を書き換えないため）
+const STATE_FILENAME = "userscripts-state.json";
+
 const SAMPLE_FILENAME = "roxy-hello.user.js";
 const SAMPLE_CODE = `// ==UserScript==
 // @name        Roxy Hello
@@ -60,6 +63,55 @@ export const ScriptStore = {
     return this._dir;
   },
 
+  get statePath() {
+    return PathUtils.join(PathUtils.profileDir, "roxy", STATE_FILENAME);
+  },
+
+  /**
+   * 有効／無効の状態を読む。未記録のスクリプトは有効とみなす。
+   */
+  async loadState() {
+    try {
+      const text = await IOUtils.readUTF8(this.statePath);
+      const parsed = JSON.parse(text);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (e) {
+      if (e?.name !== "NotFoundError") {
+        console.warn("[Roxy] 状態ファイルを読めません:", e);
+      }
+      return {};
+    }
+  },
+
+  async setEnabled(scriptId, enabled) {
+    const state = await this.loadState();
+    state[scriptId] = { enabled: !!enabled };
+    await IOUtils.makeDirectory(PathUtils.parent(this.statePath), {
+      createAncestors: true,
+    });
+    await IOUtils.writeUTF8(this.statePath, JSON.stringify(state, null, 2), {
+      tmpPath: `${this.statePath}.tmp`,
+    });
+  },
+
+  /**
+   * スクリプトファイルを削除する。状態の記録も消す。
+   */
+  async remove(scriptId) {
+    const path = PathUtils.join(this.dir, scriptId);
+    // ディレクトリ外を消させない
+    if (PathUtils.parent(path) !== this.dir) {
+      throw new Error(`不正なスクリプトIDです: ${scriptId}`);
+    }
+    await IOUtils.remove(path, { ignoreAbsent: true });
+
+    const state = await this.loadState();
+    delete state[scriptId];
+    await IOUtils.writeUTF8(this.statePath, JSON.stringify(state, null, 2), {
+      tmpPath: `${this.statePath}.tmp`,
+    });
+  },
+
   /**
    * ディレクトリを用意し、初回のみサンプルを置く。
    */
@@ -83,6 +135,7 @@ export const ScriptStore = {
   async loadAll() {
     await this.ensureDir();
 
+    const state = await this.loadState();
     const scripts = [];
     let children;
     try {
@@ -121,6 +174,8 @@ export const ScriptStore = {
         code,
         meta,
         metaStr: meta.metaStr,
+        // 未記録なら有効。新しく置いたスクリプトがすぐ動くようにする。
+        enabled: state[filename]?.enabled !== false,
         rules: UrlMatcher.compile(meta),
       });
     }

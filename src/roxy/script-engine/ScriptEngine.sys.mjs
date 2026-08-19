@@ -100,6 +100,9 @@ export const ScriptEngine = {
 
     const result = [];
     for (const script of this._scripts) {
+      if (!script.enabled) {
+        continue;
+      }
       if (script.meta.noframes && !isTopLevel) {
         continue;
       }
@@ -126,5 +129,45 @@ export const ScriptEngine = {
       });
     }
     return result;
+  },
+
+  // ---- about:roxy から呼ばれる操作 ----
+
+  /**
+   * 一覧表示用。スクリプト本文は重いので含めない。
+   */
+  async listScripts() {
+    if (this._loadPromise) {
+      await this._loadPromise;
+    }
+    return this._scripts.map(s => ({
+      id: s.id,
+      name: s.name,
+      enabled: s.enabled,
+      path: s.path,
+      version: s.meta.version,
+      description: s.meta.description,
+      runAt: s.meta.runAt,
+      match: s.meta.match,
+      include: s.meta.include,
+      grant: s.meta.grant,
+    }));
+  },
+
+  async setEnabled(scriptId, enabled) {
+    await ScriptStore.setEnabled(scriptId, enabled);
+    await this.reload();
+  },
+
+  async removeScript(scriptId) {
+    await ScriptStore.remove(scriptId);
+    await this.reload();
+  },
+
+  /**
+   * スクリプト置き場のパス。UI の「フォルダを開く」用。
+   */
+  get scriptsDir() {
+    return ScriptStore.dir;
   },
 };

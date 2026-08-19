@@ -12,10 +12,20 @@ index b174449a09..f1da642d51 100644
 +    "policies.json",
 +]
 diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
-index 203811a0fb..b526d29f01 100644
+index 203811a0fb..9e0a7cd99d 100644
 --- a/browser/installer/package-manifest.in
 +++ b/browser/installer/package-manifest.in
-@@ -463,3 +463,5 @@ bin/libfreebl_64int_3.so
+@@ -232,6 +232,9 @@
+ @RESPATH@/browser/chrome.manifest
+ @RESPATH@/browser/chrome/browser@JAREXT@
+ @RESPATH@/browser/chrome/browser.manifest
++; Roxy: about:roxy の UI（src/roxy/settings/jar.mn が生成する）
++@RESPATH@/browser/chrome/roxy@JAREXT@
++@RESPATH@/browser/chrome/roxy.manifest
+ @RESPATH@/chrome/toolkit@JAREXT@
+ @RESPATH@/chrome/toolkit.manifest
+ #ifdef MOZ_GTK
+@@ -463,3 +466,5 @@ bin/libfreebl_64int_3.so
  #if defined(BUILT_BY_MOZILLA)
  @RESPATH@/distribution/*
  #endif

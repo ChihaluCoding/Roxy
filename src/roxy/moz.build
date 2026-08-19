@@ -9,6 +9,7 @@
 
 DIRS += [
     "script-engine",
+    "settings",
 ]
 
 EXTRA_JS_MODULES.roxy += [

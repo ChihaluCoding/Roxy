@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome:; object-src 'none'"
+    />
+    <title>Roxy Settings</title>
+    <link rel="stylesheet" href="chrome://roxy/content/settings.css" />
+    <script src="chrome://roxy/content/settings.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Roxy</h1>
+      <nav>
+        <button class="tab is-active" data-panel="userscripts">
+          ユーザースクリプト
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="panel-userscripts">
+        <div class="toolbar">
+          <button id="reload">再読み込み</button>
+          <button id="open-folder">フォルダを開く</button>
+          <span id="status" class="status"></span>
+        </div>
+
+        <p class="hint">
+          スクリプトはプロファイル内の <code id="dir-path"></code>
+          に置きます。ファイルを追加・編集したあとは「再読み込み」を押してください。
+        </p>
+
+        <div id="empty" class="empty" hidden>
+          ユーザースクリプトがまだありません。
+          上のフォルダに <code>*.user.js</code> を置いてください。
+        </div>
+
+        <ul id="script-list" class="script-list"></ul>
+      </section>
+    </main>
+  </body>
+</html>
