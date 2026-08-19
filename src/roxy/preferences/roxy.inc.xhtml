@@ -35,6 +35,16 @@
     変更の反映には再起動が必要です。
   </description>
 
+  <checkbox id="roxyUpdateEnabled"
+            preference="roxy.script.update.enabled"
+            label="ユーザースクリプトを自動更新する"/>
+  <description class="indent tip-caption">
+    @updateURL を持つスクリプトを定期的に確認し、新しい版があれば
+    置き換えます。配布元を信頼して、その都度のコードを実行し続けることに
+    なります。信頼できない配布元のスクリプトを入れている場合は無効に
+    してください。
+  </description>
+
   <hbox class="indent">
     <button id="roxyOpenManager"
             label="ユーザースクリプトを管理…"/>

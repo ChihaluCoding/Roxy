@@ -549,6 +549,24 @@ function init() {
     await refresh();
   });
 
+  el("check-updates").addEventListener("click", async () => {
+    const button = el("check-updates");
+    button.disabled = true;
+    setStatus("更新を確認しています…");
+    try {
+      const res = await ScriptEngine.checkForUpdates();
+      setStatus(
+        `${res.checked} 件を確認 / ${res.updated} 件更新 / ${res.failed} 件失敗`
+      );
+    } catch (e) {
+      console.error("[Roxy] 更新確認に失敗しました:", e);
+      setStatus("更新確認に失敗しました");
+    } finally {
+      button.disabled = false;
+      await refresh();
+    }
+  });
+
   el("restore-samples").addEventListener("click", async () => {
     setStatus("サンプルを作成しています…");
     await ScriptEngine.restoreSamples();

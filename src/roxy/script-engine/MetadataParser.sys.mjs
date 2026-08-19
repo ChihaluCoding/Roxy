@@ -66,6 +66,9 @@ export const MetadataParser = {
       grant: [],
       connect: [],
       runAt: "document-idle",
+      // 自動更新用。updateURL はメタデータだけの軽いファイルを指すことが多い。
+      updateURL: "",
+      downloadURL: "",
       noframes: false,
       // GM_info.scriptMetaStr 用に生のブロックを保持する
       metaStr: block[0],
@@ -86,6 +89,14 @@ export const MetadataParser = {
         case "version":
         case "description":
           meta[key] = value;
+          break;
+
+        case "updateurl":
+          meta.updateURL = value;
+          break;
+
+        case "downloadurl":
+          meta.downloadURL = value;
           break;
 
         case "run-at":

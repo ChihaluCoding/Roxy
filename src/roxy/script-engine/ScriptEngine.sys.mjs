@@ -18,6 +18,7 @@ import { MetadataParser } from "resource:///modules/roxy/MetadataParser.sys.mjs"
 import { ResourceStore } from "resource:///modules/roxy/ResourceStore.sys.mjs";
 import { ScriptStore } from "resource:///modules/roxy/ScriptStore.sys.mjs";
 import { ValueStore } from "resource:///modules/roxy/ValueStore.sys.mjs";
+import { UpdateService } from "resource:///modules/roxy/UpdateService.sys.mjs";
 import { UrlMatcher } from "resource:///modules/roxy/UrlMatcher.sys.mjs";
 
 const Cu = Components.utils;
@@ -55,6 +56,9 @@ export const ScriptEngine = {
     // 起動を遅らせないよう、読み込みは待たずに走らせる。
     // 最初のページが先に来ても getMatchingScripts() 側で待てる。
     this.reload();
+
+    // 自動更新。起動直後は走らせず、少し置いてから確認する。
+    UpdateService.init(this);
 
     console.log("[Roxy] Script Engine を起動しました");
   },
@@ -280,6 +284,34 @@ ${code}
         line: Number.isFinite(line) && line >= 1 ? line : null,
       };
     }
+  },
+
+  /**
+   * 更新処理が使う内部形式のスクリプト一覧（meta をそのまま持つ）。
+   */
+  async listScriptsRaw() {
+    if (this._loadPromise) {
+      await this._loadPromise;
+    }
+    return this._scripts;
+  },
+
+  /**
+   * 手動で更新を確認する。about:roxy のボタンから呼ぶ。
+   */
+  async checkForUpdates() {
+    const result = await UpdateService.checkAll();
+    for (const r of result.results) {
+      if (r.error) {
+        this.recordError(r.id, r.error, "");
+      }
+    }
+    await this.reload();
+    return result;
+  },
+
+  get lastUpdateCheck() {
+    return UpdateService.lastCheck;
   },
 
   /**

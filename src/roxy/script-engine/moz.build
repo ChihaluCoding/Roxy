@@ -13,6 +13,7 @@ EXTRA_JS_MODULES.roxy += [
     "RoxyScriptParent.sys.mjs",
     "ScriptEngine.sys.mjs",
     "ScriptStore.sys.mjs",
+    "UpdateService.sys.mjs",
     "UrlMatcher.sys.mjs",
     "ValueStore.sys.mjs",
     "XhrService.sys.mjs",

@@ -28,6 +28,7 @@ var gRoxyPane = {
     Preferences.addAll([
       { id: "roxy.enabled", type: "bool" },
       { id: "roxy.script.enabled", type: "bool" },
+      { id: "roxy.script.update.enabled", type: "bool" },
       { id: "roxy.script.gmxhr.enforce_connect", type: "bool" },
     ]);
 

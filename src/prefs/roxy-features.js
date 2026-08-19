@@ -21,6 +21,13 @@ pref("roxy.script.gmxhr.enforce_connect", true);
 // 判定して分岐することがあるため、互換性を優先して既定は Violentmonkey。
 pref("roxy.script.handler_name", "Violentmonkey");
 
+// ユーザースクリプトの自動更新。
+// @updateURL / @downloadURL を持つスクリプトを定期的に確認し、
+// 新しい版があれば置き換える。配布元を信頼して任意のコードを
+// 実行し続けることになる点に注意。
+pref("roxy.script.update.enabled", true);
+pref("roxy.script.update.interval_hours", 24);
+
 // ---- 汎用ルール (Phase 2) ----
 pref("roxy.rules.allow_selection", true);   // テキスト選択禁止の解除
 pref("roxy.rules.allow_copy", true);
