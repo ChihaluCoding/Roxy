@@ -20,8 +20,7 @@ const PREF_READY = "roxy.layer.ready";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  // M2 以降でここにサブモジュールを足す。
-  // ScriptEngine: "resource:///modules/roxy/script-engine/ScriptEngine.sys.mjs",
+  ScriptEngine: "resource:///modules/roxy/ScriptEngine.sys.mjs",
 });
 
 export const RoxyLayer = {
@@ -46,10 +45,13 @@ export const RoxyLayer = {
     Services.prefs.setBoolPref(PREF_READY, true);
     this.log(`起動しました (Roxy ${Services.appinfo.version})`);
 
-    // --- M2 以降のサブモジュール起動位置 ---
-    // if (Services.prefs.getBoolPref("roxy.script.enabled", true)) {
-    //   lazy.ScriptEngine.init();
-    // }
+    // --- サブモジュールの起動位置 ---
+    // 例外が出ても他の機能とブラウザ本体を巻き込まないよう個別に囲む。
+    try {
+      lazy.ScriptEngine.init();
+    } catch (e) {
+      console.error("[Roxy] Script Engine の起動に失敗しました:", e);
+    }
   },
 
   log(msg) {

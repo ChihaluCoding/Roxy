@@ -1,0 +1,15 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Script Engine のモジュール。配置先は resource:///modules/roxy/ に揃える
+# （ディレクトリは分けるが、参照 URI はフラットに保つ）。
+
+EXTRA_JS_MODULES.roxy += [
+    "MetadataParser.sys.mjs",
+    "RoxyScriptChild.sys.mjs",
+    "RoxyScriptParent.sys.mjs",
+    "ScriptEngine.sys.mjs",
+    "ScriptStore.sys.mjs",
+    "UrlMatcher.sys.mjs",
+]

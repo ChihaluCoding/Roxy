@@ -1,0 +1,117 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/**
+ * Script Engine の親プロセス側の中枢。
+ *
+ * 役割は 3 つ。
+ *   1. JSActor の登録
+ *   2. スクリプトの保持と、URL に対する絞り込み
+ *   3. 特権が要る処理の受け口（GM API は M3 でここに足す）
+ *
+ * content プロセスにはスクリプト本文しか渡さない。ファイル入出力や
+ * クロスオリジン通信は必ずこちら側で行う。
+ */
+
+import { ScriptStore } from "resource:///modules/roxy/ScriptStore.sys.mjs";
+import { UrlMatcher } from "resource:///modules/roxy/UrlMatcher.sys.mjs";
+
+const ACTOR_NAME = "RoxyScript";
+const PREF_ENABLED = "roxy.script.enabled";
+
+export const ScriptEngine = {
+  _initialized: false,
+  _scripts: [],
+  _loadPromise: null,
+
+  init() {
+    if (this._initialized) {
+      return;
+    }
+    this._initialized = true;
+
+    if (!Services.prefs.getBoolPref(PREF_ENABLED, true)) {
+      console.log("[Roxy] Script Engine は無効です");
+      return;
+    }
+
+    this._registerActor();
+
+    // 起動を遅らせないよう、読み込みは待たずに走らせる。
+    // 最初のページが先に来ても getMatchingScripts() 側で待てる。
+    this.reload();
+
+    console.log("[Roxy] Script Engine を起動しました");
+  },
+
+  _registerActor() {
+    try {
+      ChromeUtils.registerWindowActor(ACTOR_NAME, {
+        parent: {
+          esModuleURI: "resource:///modules/roxy/RoxyScriptParent.sys.mjs",
+        },
+        child: {
+          esModuleURI: "resource:///modules/roxy/RoxyScriptChild.sys.mjs",
+          events: {
+            // @run-at の 3 タイミングに対応する DOM イベント
+            DOMDocElementInserted: {}, // document-start
+            DOMContentLoaded: {}, // document-end
+            load: { capture: true }, // document-idle
+          },
+        },
+        allFrames: true,
+      });
+    } catch (e) {
+      // 既に登録済みの場合もここに来る（開発中の再入対策）
+      console.error("[Roxy] アクターの登録に失敗しました:", e);
+    }
+  },
+
+  /**
+   * ディスクから読み直す。M4 の管理 UI から呼ぶ想定。
+   */
+  reload() {
+    this._loadPromise = ScriptStore.loadAll()
+      .then(scripts => {
+        this._scripts = scripts;
+        console.log(`[Roxy] ユーザースクリプト ${scripts.length} 件を読み込みました`);
+        return scripts;
+      })
+      .catch(e => {
+        console.error("[Roxy] スクリプトの読み込みに失敗しました:", e);
+        this._scripts = [];
+        return [];
+      });
+    return this._loadPromise;
+  },
+
+  /**
+   * URL に一致するスクリプトを、content へ渡せる形にして返す。
+   *
+   * rules（正規表現）は構造化クローンできないので送らない。
+   * 照合は必ず親側で完結させる。
+   */
+  async getMatchingScripts(url, isTopLevel) {
+    if (this._loadPromise) {
+      await this._loadPromise;
+    }
+
+    const result = [];
+    for (const script of this._scripts) {
+      if (script.meta.noframes && !isTopLevel) {
+        continue;
+      }
+      if (!UrlMatcher.test(script.rules, url)) {
+        continue;
+      }
+      result.push({
+        id: script.id,
+        name: script.name,
+        code: script.code,
+        runAt: script.meta.runAt,
+      });
+    }
+    return result;
+  },
+};
