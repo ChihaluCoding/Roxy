@@ -68,6 +68,10 @@ pref("roxy.audio.mono", false);
 pref("roxy.audio.max_boost", 500);          // % 上限
 pref("roxy.media.pip_extended", true);
 
+// 言語パック由来で残る Firefox の名前を画面に出さない。
+// 根本的には Roxy 自身の日本語版をビルドする必要がある。
+pref("roxy.ui.hide_upstream_branding", true);
+
 // ---- UI (Phase 7) ----
 pref("roxy.ui.vertical_tabs", false);
 pref("roxy.ui.tree_tabs", false);

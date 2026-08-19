@@ -20,6 +20,7 @@ const PREF_READY = "roxy.layer.ready";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  BrandingFixes: "resource:///modules/roxy/BrandingFixes.sys.mjs",
   ScriptEngine: "resource:///modules/roxy/ScriptEngine.sys.mjs",
 });
 
@@ -47,6 +48,12 @@ export const RoxyLayer = {
 
     // --- サブモジュールの起動位置 ---
     // 例外が出ても他の機能とブラウザ本体を巻き込まないよう個別に囲む。
+    try {
+      lazy.BrandingFixes.init();
+    } catch (e) {
+      console.error("[Roxy] ブランド表示の調整に失敗しました:", e);
+    }
+
     try {
       lazy.ScriptEngine.init();
     } catch (e) {

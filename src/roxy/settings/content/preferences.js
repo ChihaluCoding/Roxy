@@ -8,6 +8,10 @@
  * preferences.xhtml から読み込まれ、preferences.js が用意する
  * register_module / Preferences を使う（どちらもそのスコープの大域）。
  *
+ * このペインは RoxyScript（ユーザースクリプト）専用。
+ * Roxy 全体に関わる設定（roxy.enabled など）はここに置かない。
+ * 機能が増えたら、機能ごとにカテゴリを分ける。
+ *
  * 設定の切り替えだけを担当し、スクリプトの編集など重い UI は
  * about:roxy 側に置く。Firefox 本体の設定画面と役割を揃える。
  */
@@ -26,7 +30,6 @@ var gRoxyPane = {
     }
 
     Preferences.addAll([
-      { id: "roxy.enabled", type: "bool" },
       { id: "roxy.script.enabled", type: "bool" },
       { id: "roxy.script.update.enabled", type: "bool" },
       { id: "roxy.script.gmxhr.enforce_connect", type: "bool" },
@@ -37,7 +40,7 @@ var gRoxyPane = {
 
     document
       .getElementById("roxyOpenManager")
-      .addEventListener("command", () => {
+      .addEventListener("click", () => {
         // 設定画面を潰さずに別タブで開く
         window.browsingContext.topChromeWindow.openTrustedLinkIn(
           "about:roxy",

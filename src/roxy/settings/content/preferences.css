@@ -20,3 +20,15 @@
 #category-more-from-mozilla {
   display: none !important;
 }
+
+/* 見た目は本体の部品（moz-card / moz-fieldset / moz-checkbox）に任せる。
+ * 自前で作ると本体の更新のたびにずれるため、寸法や配色は上書きしない。
+ *
+ * ただし hidden だけは明示が要る。カスタム要素は :host の display が
+ * hidden 属性より優先されるため、指定しないと他のペインを開いても
+ * Roxy の項目が残って表示されてしまう。 */
+
+#roxyUserScriptGroup[hidden],
+#roxyScriptSecurityGroup[hidden] {
+  display: none !important;
+}

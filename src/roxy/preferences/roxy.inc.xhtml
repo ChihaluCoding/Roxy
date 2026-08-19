@@ -11,60 +11,49 @@
       class="subcategory"
       hidden="true"
       data-category="paneRoxy">
-  <html:h1>Roxy</html:h1>
+  <html:h1>RoxyScript</html:h1>
 </hbox>
 
-<groupbox id="roxyGeneralGroup" data-category="paneRoxy" hidden="true">
-  <label><html:h2>基本</html:h2></label>
+<!--
+  本体の再設計後のペインと同じ構造にする（setting-group が描画するのと同じ
+  moz-card > moz-fieldset > moz-checkbox の入れ子）。
+  見た目を自前で作ると本体の更新のたびにずれるが、同じ部品なら追従する。
+  label / description は Fluent を介さず素の属性で渡せる。
+-->
 
-  <checkbox id="roxyEnabled"
-            preference="roxy.enabled"
-            label="Roxy の機能を有効にする"/>
-  <description class="indent tip-caption">
-    無効にすると Roxy 独自の機能がすべて停止します。変更の反映には再起動が必要です。
-  </description>
-</groupbox>
+<html:moz-card id="roxyUserScriptGroup"
+               role="presentation"
+               data-category="paneRoxy"
+               hidden="true">
+  <html:moz-fieldset iconsrc="chrome://global/skin/icons/highlights.svg"
+                     label="スクリプトの実行">
+    <html:moz-checkbox id="roxyScriptEnabled"
+                       preference="roxy.script.enabled"
+                       label="RoxyScript を有効にする"
+                       description="再起動後に反映されます"/>
 
-<groupbox id="roxyUserScriptGroup" data-category="paneRoxy" hidden="true">
-  <label><html:h2>ユーザースクリプト</html:h2></label>
+    <html:moz-checkbox id="roxyUpdateEnabled"
+                       preference="roxy.script.update.enabled"
+                       label="スクリプトを自動更新する"
+                       description="新しい版が出たら自動で置き換えます。配布元を信頼することになります。"/>
 
-  <checkbox id="roxyScriptEnabled"
-            preference="roxy.script.enabled"
-            label="ユーザースクリプトを実行する"/>
-  <description class="indent tip-caption">
-    変更の反映には再起動が必要です。
-  </description>
+    <html:moz-box-button id="roxyOpenManager"
+                         label="スクリプトを管理"
+                         description="追加・編集・削除と、実行時エラーの確認"/>
+  </html:moz-fieldset>
+</html:moz-card>
 
-  <checkbox id="roxyUpdateEnabled"
-            preference="roxy.script.update.enabled"
-            label="ユーザースクリプトを自動更新する"/>
-  <description class="indent tip-caption">
-    @updateURL を持つスクリプトを定期的に確認し、新しい版があれば
-    置き換えます。配布元を信頼して、その都度のコードを実行し続けることに
-    なります。信頼できない配布元のスクリプトを入れている場合は無効に
-    してください。
-  </description>
-
-  <hbox class="indent">
-    <button id="roxyOpenManager"
-            label="ユーザースクリプトを管理…"/>
-  </hbox>
-  <description class="indent tip-caption">
-    スクリプトの追加・編集・削除と、実行時エラーの確認ができます。
-  </description>
-</groupbox>
-
-<groupbox id="roxyScriptSecurityGroup" data-category="paneRoxy" hidden="true">
-  <label><html:h2>ユーザースクリプトの通信</html:h2></label>
-
-  <checkbox id="roxyEnforceConnect"
-            preference="roxy.script.gmxhr.enforce_connect"
-            label="GM_xmlhttpRequest の接続先を @connect の宣言に限定する"/>
-  <description class="indent tip-caption">
-    この API は同一オリジンポリシーを迂回します。無効にすると、
-    スクリプトが任意のサイトへあなたの Cookie 付きでリクエストできるようになります。
-    理由がなければ有効のままにしてください。
-  </description>
-</groupbox>
+<html:moz-card id="roxyScriptSecurityGroup"
+               role="presentation"
+               data-category="paneRoxy"
+               hidden="true">
+  <html:moz-fieldset iconsrc="chrome://global/skin/icons/security.svg"
+                     label="スクリプトの通信">
+    <html:moz-checkbox id="roxyEnforceConnect"
+                       preference="roxy.script.gmxhr.enforce_connect"
+                       label="接続先を @connect の宣言に限定する"
+                       description="無効にすると、スクリプトが任意のサイトへ Cookie 付きで通信できます。理由がなければ有効のままにしてください。"/>
+  </html:moz-fieldset>
+</html:moz-card>
 
 </html:template>

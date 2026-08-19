@@ -10,6 +10,7 @@
 DIRS += [
     "script-engine",
     "settings",
+    "ui",
 ]
 
 EXTRA_JS_MODULES.roxy += [

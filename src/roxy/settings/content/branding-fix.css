@@ -1,0 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* 言語パック由来で残る "Firefox" の表示を抑える。
+ * 見た目そのものは変えず、名前が出る箇所だけを対象にする。 */
+
+@-moz-document url("chrome://browser/content/browser.xhtml") {
+  /* about: ページを開いたときに URL バーへ出るブランド名。
+   * アイコンだけ残して文字を消す。 */
+  #identity-box.chromeUI #identity-icon-label {
+    display: none !important;
+  }
+}
